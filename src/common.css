@@ -1,8 +1,37 @@
+/**
+  * i LOVE ubuntu font
+  */
+@import url("https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
+
+/**
+  * Common styles for Danbooru Tools pages
+  * Changing default values for spacing and fonts
+  */
 body {
-  font-family: Arial, sans-serif;
-  margin: calc(2em + 10px) 10px 10px;
+  margin: calc(2em + 16px) 10px 10px;
 }
 
+body,
+input,
+select,
+textarea,
+button {
+  font-family: "Ubuntu", Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.4em;
+}
+
+fieldset {
+  margin-bottom: 10px;
+}
+
+.input-group {
+  margin-bottom: 5px;
+}
+
+/**
+  * Header styles for tabs
+  */
 header {
   position: fixed;
   top: 0;
