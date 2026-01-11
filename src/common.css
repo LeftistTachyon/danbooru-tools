@@ -9,6 +9,8 @@
   */
 body {
   margin: calc(2em + 16px) 10px 10px;
+  height: calc(100vh - (2em + 16px) - 10px);
+  box-sizing: border-box;
 }
 
 body,

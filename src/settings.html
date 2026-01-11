@@ -27,6 +27,23 @@
             localStorage.setItem(settingName, valueToSave);
           });
         });
+
+        // Add external link listeners
+        document.getElementById("open-deepl").addEventListener("click", (e) => {
+          e.preventDefault();
+          nw.Shell.openExternal("https://www.deepl.com/en/your-account/keys");
+          return false;
+        });
+
+        document
+          .getElementById("open-danbooru")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            nw.Shell.openExternal(
+              `${localStorage.getItem("general.site") || "https://danbooru.donmai.us"}/profile`
+            );
+            return false;
+          });
       });
     </script>
   </head>
@@ -42,7 +59,7 @@
     All settings:
     - General
       - general.theme: Theme (light/dark) [disabled for now]
-      - general.site: Default Site Domain
+      - general.domain: Default Site Domain
     - API Keys
       - api.deepl: DeepL API Key
       - api.danbooru.username: Danbooru Username
@@ -64,7 +81,7 @@
         <input
           type="text"
           id="default-site"
-          name="general.site"
+          name="general.domain"
           class="setting"
           placeholder="danbooru.donmai.us"
         />
@@ -81,9 +98,7 @@
           name="api.deepl"
           class="setting"
         />
-        <a href="https://www.deepl.com/en/your-account/keys" target="_blank"
-          ><small>(Get your API key here)</small></a
-        >
+        <small>(From <a href="#" id="open-deepl">your DeepL account</a>)</small>
       </div>
       <hr />
       <div class="input-group">
@@ -103,7 +118,10 @@
           name="api.danbooru.key"
           class="setting"
         />
-        <small>(From your profile page)</small>
+        <small
+          >(From
+          <a href="#" id="open-danbooru">your Danbooru account</a>)</small
+        >
       </div>
     </fieldset>
   </body>

@@ -3,6 +3,46 @@
   <head>
     <link rel="stylesheet" href="common.css" />
     <title>Danbooru Tools - Commentary Tools</title>
+
+    <script src="scripts/danbooru-req.js"></script>
+    <style>
+      #errorMsg {
+        color: red;
+      }
+
+      #outer-box {
+        flex: 1;
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .inner-box {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      textarea {
+        resize: none;
+      }
+      h4 {
+        margin-bottom: 4px;
+        margin-top: 8px;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        margin-top: 12px;
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -10,6 +50,75 @@
       <a href="commentary.html" id="current-page">Commentary Tools</a>
       <a href="settings.html">Settings</a>
     </header>
-    <p>(pretend there's things here)</p>
+
+    <h1 style="margin-top: 0">Commentary Tools</h1>
+
+    <form action="#" id="get-posts-form">
+      <fieldset>
+        <legend>Pool Settings</legend>
+        <div
+          class="input-group"
+          style="display: flex; align-items: center; gap: 4px"
+        >
+          <label for="tag-string">Tag string:</label>
+          <input
+            type="text"
+            id="tag-string"
+            value="commentary_request"
+            style="flex: 1"
+            required
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="post-limit">Max # of posts:</label>
+          <input
+            type="number"
+            id="post-limit"
+            value="100"
+            min="1"
+            max="200"
+            required
+          />
+        </div>
+
+        <div class="input-group">
+          <input type="checkbox" id="include-partial" checked />
+          <label for="include-partial">Include non-empty commentaries</label>
+        </div>
+
+        <input type="submit" value="Fetch posts" />
+      </fieldset>
+    </form>
+    <span id="errorMsg" style="display: none"></span>
+
+    <div id="outer-box">
+      <div class="inner-box">
+        <h4>Original title</h4>
+        <input type="text" id="original-title" />
+        <h4>Original description</h4>
+        <textarea id="original-description" style="flex: 1"></textarea>
+      </div>
+
+      <div class="inner-box">
+        <h4>DeepL'd title</h4>
+        <input type="text" id="deepl-title" />
+        <h4>DeepL'd description</h4>
+        <textarea id="deepl-description" style="flex: 1"></textarea>
+      </div>
+
+      <div class="inner-box">
+        <h4>Translated title</h4>
+        <input type="text" id="translated-title" />
+        <h4>Translated description</h4>
+        <textarea id="translated-description" style="flex: 1"></textarea>
+      </div>
+    </div>
+
+    <div class="center">
+      <button id="prev-post">&lt;</button>
+      <span id="post-counter">0 / 0</span>
+      <button id="next-post">&gt;</button>
+    </div>
   </body>
 </html>
