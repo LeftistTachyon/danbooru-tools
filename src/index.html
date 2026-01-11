@@ -3,14 +3,24 @@
   <head>
     <link rel="stylesheet" href="common.css" />
     <title>Danbooru Tools - Homepage</title>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const username = localStorage.getItem("api.danbooru.username");
+        if (username) {
+          document.getElementById("welcome").innerText =
+            `Welcome back to the Danbooru Toolbox, ${username}!`;
+        }
+      });
+    </script>
   </head>
   <body>
     <header>
       <a href="index.html" id="current-page">Home</a>
-      <a href="commentary.html">Commentary Copier</a>
+      <a href="commentary.html">Commentary Tools</a>
       <a href="settings.html">Settings</a>
     </header>
-    <h1>Welcome to the Danbooru Toolbox!</h1>
+    <h1 id="welcome">Welcome to the Danbooru Toolbox!</h1>
     <p>I have a couple of tools here that I find helpful lol</p>
   </body>
 </html>
