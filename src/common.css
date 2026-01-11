@@ -1,0 +1,36 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: calc(2em + 10px) 10px 10px;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 2em;
+
+  background-color: #333;
+  margin: 0;
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  align-content: flex-start;
+}
+
+header > a {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+
+  color: white;
+  text-decoration: none;
+  padding: 5px;
+}
+
+header > a#current-page {
+  color: #333;
+  background-color: white;
+}
