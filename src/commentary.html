@@ -42,6 +42,9 @@
         gap: 12px;
         margin-top: 12px;
       }
+      .center > label {
+        margin-right: 4px;
+      }
     </style>
   </head>
   <body>
@@ -83,8 +86,8 @@
         </div>
 
         <div class="input-group">
-          <input type="checkbox" id="include-partial" checked />
-          <label for="include-partial">Include non-empty commentaries</label>
+          <input type="checkbox" id="commentary" />
+          <label for="commentary">Include non-empty commentaries</label>
         </div>
 
         <input type="submit" value="Fetch posts" />
@@ -95,16 +98,16 @@
     <div id="outer-box">
       <div class="inner-box">
         <h4>Original title</h4>
-        <input type="text" id="original-title" />
+        <input type="text" id="original-title" readonly />
         <h4>Original description</h4>
-        <textarea id="original-description" style="flex: 1"></textarea>
+        <textarea id="original-description" readonly style="flex: 1"></textarea>
       </div>
 
       <div class="inner-box">
         <h4>DeepL'd title</h4>
-        <input type="text" id="deepl-title" />
+        <input type="text" id="deepl-title" readonly />
         <h4>DeepL'd description</h4>
-        <textarea id="deepl-description" style="flex: 1"></textarea>
+        <textarea id="deepl-description" readonly style="flex: 1"></textarea>
       </div>
 
       <div class="inner-box">
@@ -115,10 +118,28 @@
       </div>
     </div>
 
+    <div class="center" style="gap: 4px">
+      <input type="checkbox" id="commentary" />
+      <label for="commentary">commentary</label>
+      <input type="checkbox" id="commentary_request" />
+      <label for="commentary_request">commentary_request</label>
+      <input type="checkbox" id="commentary_check" />
+      <label for="commentary_check">commentary_check</label>
+      <input type="checkbox" id="partial_commentary" />
+      <label for="partial_commentary">partial_commentary</label>
+    </div>
     <div class="center">
-      <button id="prev-post">&lt;</button>
-      <span id="post-counter">0 / 0</span>
-      <button id="next-post">&gt;</button>
+      <button id="open-btn">Open in browser</button>
+      <button id="overwrite-btn">Overwrite previous translation</button>
+      <button id="submit-btn">Submit</button>
+    </div>
+    <div class="center">
+      <button id="first-post" disabled>&lt;&lt;</button>
+      <button id="prev-post" disabled>&lt;</button>
+      <span id="post-counter">0 / 0 (0)</span>
+      <button id="next-post" disabled>&gt;</button>
+      <button id="next-unique-post" disabled>|&gt;</button>
+      <button id="last-post" disabled>&gt;&gt;</button>
     </div>
   </body>
 </html>
