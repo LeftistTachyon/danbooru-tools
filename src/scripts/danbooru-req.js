@@ -1,18 +1,13 @@
+import {
+  fetchPosts,
+  fetchProfile,
+  hasLogin,
+  updateArtistCommentary,
+} from "./danbooru.js";
 import { instantiated, translate } from "./deepl.js";
 
 // initialize reused variables
-const domain =
-  "https://" + (localStorage.getItem("general.domain") || "danbooru.donmai.us");
-const headers = new Headers({
-  Authorization:
-    "Basic " +
-    btoa(
-      localStorage.getItem("api.danbooru.username") +
-        ":" +
-        localStorage.getItem("api.danbooru.key")
-    ),
-  "Content-Type": "application/json",
-});
+
 let postList = [],
   fetchedNum = 0,
   currIdx = 0,
@@ -37,26 +32,16 @@ function showInfo(message) {
 
 async function attemptLoad() {
   // check for login details
-  if (
-    !localStorage.getItem("api.danbooru.username") ||
-    !localStorage.getItem("api.danbooru.key")
-  ) {
+  if (!hasLogin()) {
     return "noLogin";
   }
 
   try {
     // test api
-    const profileResponse = await fetch(`${domain}/profile.json`, {
-      method: "GET",
-      headers,
-    });
-    if (!profileResponse.ok || profileResponse.status === 401) {
-      return "badLogin";
-    }
-
-    const result = await profileResponse.json();
+    const result = await fetchProfile();
     console.log("Logged in as:", result.name);
-    return result.name === localStorage.getItem("api.danbooru.username")
+    return result &&
+      result.name === localStorage.getItem("api.danbooru.username")
       ? "success"
       : "badLogin";
   } catch (err) {
@@ -209,20 +194,11 @@ async function submitTranslation(
   // console.log("Submitting translation for post", currPost.id, body);
 
   // send request
-  const requestOptions = {
-    method: "PUT",
-    headers,
-    body: JSON.stringify({ artist_commentary }),
-  };
-  const resp = await fetch(
-    `${domain}/artist_commentaries/create_or_update.json`,
-    requestOptions
-  );
+  const resp = await updateArtistCommentary(artist_commentary);
 
-  if (!resp.ok) {
-    const json = await resp.json();
+  if (resp) {
     showError(
-      `Failed to submit translation (${resp.status}). ${json.message || "Please try again."}`
+      `Failed to submit translation. ${resp.message || "Please try again."}`
     );
   } else {
     showInfo("Translation submitted successfully!");
@@ -245,20 +221,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       const includePartial = document.getElementById("include-partial").checked;
 
       // fetch posts
-      const postsResponse = await fetch(
-        `${domain}/posts.json?tags=${encodeURIComponent(tagString)}&limit=${postLimit}&only=id,artist_commentary,tag_string_meta`,
-        { headers }
-      );
-      const posts = await postsResponse.json();
-      if (!postsResponse.ok) {
+      const { ok, message, posts } = await fetchPosts(tagString, postLimit);
+      if (!ok) {
         showError(
           "Failed to fetch posts. " +
-            (posts.message || "Please check your tag string and try again.") +
-            `(${postsResponse.status})`
+            (message || "Please check your tag string and try again.")
         );
         return;
       }
-      console.log("Sample post:", posts[0]);
+      // console.log("Sample post:", posts[0]);
 
       // filter posts
       fetchedNum = posts.length;
