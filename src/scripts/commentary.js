@@ -7,7 +7,6 @@ import {
 import { instantiated, translate } from "./deepl.js";
 
 // initialize reused variables
-
 let postList = [],
   fetchedNum = 0,
   currIdx = 0,
@@ -406,13 +405,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.addEventListener("keypress", (e) => {
     // Ctrl+Enter to submit
     if (e.key === "\n" && e.ctrlKey === true) {
-      console.log("Submit translation");
+      // console.log("Submit translation");
       submitTranslation();
       return;
     }
 
     if (e.target !== document.body) return; // ignore if focused on inputs
-    console.log("Key pressed:", e.key, e.ctrlKey, e.shiftKey, e.metaKey);
+    // console.log("Key pressed:", e.key, e.ctrlKey, e.shiftKey, e.metaKey);
 
     switch (e.key) {
       case "a":
@@ -452,12 +451,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         break;
       case "\u{000F}":
         // Ctrl-O
-        console.log("Open in browser");
+        // console.log("Open in browser");
         nw.Shell.openExternal(`${domain}/posts/${postList[currIdx].id}`);
         break;
       case "\u{0005}":
         // Ctrl-E
-        console.log("Overwrite previous translation");
+        // console.log("Overwrite previous translation");
         if (
           confirm(
             "Are you sure you want to overwrite the current translation with a saved version?"
@@ -486,7 +485,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         "Your Danbooru login details are incorrect. Please go to the settings tab to fix them."
       );
       break;
-    default:
+    case "success":
       break; // do nothing
   }
 });
