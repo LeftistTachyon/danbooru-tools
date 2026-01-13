@@ -17,6 +17,23 @@ let postList = [],
   currIdx = 0,
   translationDict = {};
 
+// for showing error messages below search box
+function showError(message) {
+  document.getElementById("infoMsg").style.display = "none";
+
+  const errorMsg = document.getElementById("errorMsg");
+  errorMsg.style.display = "block";
+  errorMsg.textContent = message;
+}
+// for showing info messages below search box
+function showInfo(message) {
+  document.getElementById("errorMsg").style.display = "none";
+
+  const infoMsg = document.getElementById("infoMsg");
+  infoMsg.style.display = "block";
+  infoMsg.textContent = message;
+}
+
 async function attemptLoad() {
   // check for login details
   if (
@@ -208,10 +225,11 @@ async function submitTranslation(
 
   if (!resp.ok) {
     const json = await resp.json();
-    errorMsg.style.display = "block";
-    errorMsg.textContent = `Failed to submit translation (${resp.status}). ${json.message || "Please try again."}`;
+    showError(
+      `Failed to submit translation (${resp.status}). ${json.message || "Please try again."}`
+    );
   } else {
-    alert("Translation submitted successfully!");
+    showInfo("Translation submitted successfully!");
   }
 }
 
@@ -239,11 +257,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
       const posts = await postsResponse.json();
       if (!postsResponse.ok) {
-        errorMsg.style.display = "block";
-        errorMsg.textContent =
+        showError(
           "Failed to fetch posts. " +
-          (posts.message || "Please check your tag string and try again.") +
-          `(${postsResponse.status})`;
+            (posts.message || "Please check your tag string and try again.") +
+            `(${postsResponse.status})`
+        );
         return;
       }
       console.log("Sample post:", posts[0]);
@@ -402,18 +420,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   // display any errors
   switch (result) {
     case "noLogin":
-      errorMsg.style.display = "block";
-      errorMsg.textContent =
-        "Your Danbooru login details are not set. Please go to the settings tab to set them.";
+      showError(
+        "Your Danbooru login details are not set. Please go to the settings tab to set them."
+      );
       break;
     case "badLogin":
-      errorMsg.style.display = "block";
-      errorMsg.textContent =
-        "Your Danbooru login details are incorrect. Please go to the settings tab to fix them.";
+      showError(
+        "Your Danbooru login details are incorrect. Please go to the settings tab to fix them."
+      );
       break;
     default:
-      // errorMsg.style.display = "block";
-      // errorMsg.textContent = "lol. lmao, even";
       break; // do nothing
   }
 
