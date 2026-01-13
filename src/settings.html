@@ -4,30 +4,9 @@
     <link rel="stylesheet" href="common.css" />
     <title>Danbooru Tools - Settings</title>
 
+    <script src="scripts/load-settings.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        const settingsElements = document.querySelectorAll(".setting");
-
-        // Load settings from localStorage
-        settingsElements.forEach((element) => {
-          const settingName = element.name;
-          const savedValue = localStorage.getItem(settingName);
-          if (savedValue !== null) {
-            if (element.type === "checkbox") {
-              element.checked = savedValue === "true";
-            } else {
-              element.value = savedValue;
-            }
-          }
-
-          // Save settings to localStorage on change
-          element.addEventListener("change", () => {
-            const valueToSave =
-              element.type === "checkbox" ? element.checked : element.value;
-            localStorage.setItem(settingName, valueToSave);
-          });
-        });
-
         // Add external link listeners
         document.getElementById("open-deepl").addEventListener("click", (e) => {
           e.preventDefault();

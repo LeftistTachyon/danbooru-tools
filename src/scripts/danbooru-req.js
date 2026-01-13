@@ -1,36 +1,49 @@
-const deepl = require("deepl-node");
-
 // initialize reused variables
 const domain =
   "https://" + (localStorage.getItem("general.domain") || "danbooru.donmai.us");
-const deeplClient = (() => {
-  const deeplKey = localStorage.getItem("api.deepl");
-  return deeplKey ? new deepl.Translator(deeplKey) : null;
-})();
-let postList,
+const headers = new Headers({
+  Authorization:
+    "Basic " +
+    btoa(
+      localStorage.getItem("api.danbooru.username") +
+        ":" +
+        localStorage.getItem("api.danbooru.key")
+    ),
+  "Content-Type": "application/json",
+});
+let deeplClient = undefined; // initialize later if api key set
+let postList = [],
   fetchedNum = 0,
   currIdx = 0,
-  translatedRecord = {};
+  translationDict = {};
 
 async function attemptLoad() {
   // check for login details
-  const username = localStorage.getItem("api.danbooru.username");
-  const apiKey = localStorage.getItem("api.danbooru.key");
-  if (!username || !apiKey) {
+  if (
+    !localStorage.getItem("api.danbooru.username") ||
+    !localStorage.getItem("api.danbooru.key")
+  ) {
     return "noLogin";
   }
 
-  // test api
-  const profileResponse = await fetch(
-    `${domain}/profile.json?login=${username}&api_key=${apiKey}`
-  );
-  if (!profileResponse.ok || profileResponse.status === 401) {
+  try {
+    // test api
+    const profileResponse = await fetch(`${domain}/profile.json`, {
+      method: "GET",
+      headers,
+    });
+    if (!profileResponse.ok || profileResponse.status === 401) {
+      return "badLogin";
+    }
+
+    const result = await profileResponse.json();
+    console.log("Logged in as:", result.name);
+    return result.name === localStorage.getItem("api.danbooru.username")
+      ? "success"
+      : "badLogin";
+  } catch (err) {
     return "badLogin";
   }
-
-  // const result = await profileResponse.json();
-  // console.log("Logged in as:", result);
-  return "success";
 }
 
 async function updateView() {
@@ -40,12 +53,16 @@ async function updateView() {
   // update counters & buttons
   const postCounter = document.getElementById("post-counter");
   postCounter.textContent = `${currIdx + 1} / ${postList.length} (${fetchedNum})`;
+  document.getElementById("first-post").disabled = currIdx <= 0;
   document.getElementById("prev-post").disabled = currIdx <= 0;
   document.getElementById("next-post").disabled =
+    currIdx >= postList.length - 1;
+  document.getElementById("last-post").disabled =
     currIdx >= postList.length - 1;
 
   // pull in commentary data
   const post = postList[currIdx];
+  if (!post) return;
   document.getElementById("original-title").value =
     post.artist_commentary.original_title || "";
   document.getElementById("original-description").value =
@@ -57,10 +74,21 @@ async function updateView() {
   document.getElementById("deepl-title").value = "Translating...";
   document.getElementById("deepl-description").value = "Translating...";
 
+  // pull in tag data
+  document.getElementById("commentary").checked = /[^_]commentary[^_]/g.test(
+    post.tag_string_meta
+  );
+  document.getElementById("commentary_request").checked =
+    post.tag_string_meta.includes("commentary_request");
+  document.getElementById("commentary_check").checked =
+    post.tag_string_meta.includes("commentary_check");
+  document.getElementById("partial_commentary").checked =
+    post.tag_string_meta.includes("partial_commentary");
+
   // perform deepl translation
   if (deeplClient) {
     if (post.artist_commentary.original_title) {
-      if (post.post.artist_commentary.original_description) {
+      if (post.artist_commentary.original_description) {
         const translated = await deeplClient.translateText(
           [
             post.artist_commentary.original_title,
@@ -100,42 +128,78 @@ async function updateView() {
   }
 }
 
-async function submitTranslation() {
+function confirmUnsaved() {
+  const currPost = postList[currIdx];
+  return (
+    (currPost &&
+      document.getElementById("translated-title").value ===
+        currPost.artist_commentary.translated_title &&
+      document.getElementById("translated-description").value ===
+        currPost.artist_commentary.translated_description) ||
+    confirm("You have unsubmitted changes. Continue?")
+  );
+}
+
+async function submitTranslation(
+  translated_title = undefined,
+  translated_description = undefined
+) {
+  // set default values
+  if (translated_title === undefined)
+    translated_title = document.getElementById("translated-title").value;
+  if (translated_description === undefined)
+    translated_description = document.getElementById(
+      "translated-description"
+    ).value;
+
+  // save translation to memory
+  const currPost = postList[currIdx];
+  if (translated_title && currPost.artist_commentary.original_title)
+    currPost.artist_commentary.translated_title = translationDict[
+      currPost.artist_commentary.original_title
+    ] = translated_title;
+  if (translated_description && currPost.artist_commentary.original_description)
+    currPost.artist_commentary.translated_description = translationDict[
+      currPost.artist_commentary.original_description
+    ] = translated_description;
+  // console.log("translation dictionary:", translationDict);
+
   // build request
-  const body = {
-    post_id: postList[currIdx].id,
-    translated_title: document.getElementById("translated-title").value,
-    translated_description: document.getElementById("translated-description")
-      .value,
+  const artist_commentary = {
+    post_id: currPost.id,
   };
+  if (translated_title) artist_commentary.translated_title = translated_title;
+  if (translated_description)
+    artist_commentary.translated_description = translated_description;
 
   // handle tags
   if (document.getElementById("commentary").checked) {
-    body.add_commentary_tag = true;
+    artist_commentary.add_commentary_tag = true;
   } else {
-    body.remove_commentary_tag = true;
+    artist_commentary.remove_commentary_tag = true;
   }
   if (document.getElementById("commentary_request").checked) {
-    body.add_commentary_request_tag = true;
+    artist_commentary.add_commentary_request_tag = true;
   } else {
-    body.remove_commentary_request_tag = true;
+    artist_commentary.remove_commentary_request_tag = true;
   }
   if (document.getElementById("commentary_check").checked) {
-    body.add_commentary_check_tag = true;
+    artist_commentary.add_commentary_check_tag = true;
   } else {
-    body.remove_commentary_check_tag = true;
+    artist_commentary.remove_commentary_check_tag = true;
   }
   if (document.getElementById("partial_commentary").checked) {
-    body.add_partial_commentary_tag = true;
+    artist_commentary.add_partial_commentary_tag = true;
   } else {
-    body.remove_partial_commentary_tag = true;
+    artist_commentary.remove_partial_commentary_tag = true;
   }
+  // console.log("Submitting translation for post", currPost.id, body);
 
   // send request
   const requestOptions = {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    headers,
+    body: JSON.stringify({ artist_commentary }),
   };
   const resp = await fetch(
     `${domain}/artist_commentaries/create_or_update.json`,
@@ -143,33 +207,16 @@ async function submitTranslation() {
   );
 
   if (!resp.ok) {
+    const json = await resp.json();
     errorMsg.style.display = "block";
-    errorMsg.textContent = `Failed to submit translation (${resp.status}). Please try again.`;
+    errorMsg.textContent = `Failed to submit translation (${resp.status}). ${json.message || "Please try again."}`;
+  } else {
+    alert("Translation submitted successfully!");
   }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // load credentials and test
-  const result = await attemptLoad();
   const errorMsg = document.getElementById("errorMsg");
-
-  // display any errors
-  switch (result) {
-    case "noLogin":
-      errorMsg.style.display = "block";
-      errorMsg.textContent =
-        "Your Danbooru login details are not set. Please go to the settings tab to set them.";
-      break;
-    case "badLogin":
-      errorMsg.style.display = "block";
-      errorMsg.textContent =
-        "Your Danbooru login details are incorrect. Please go to the settings tab to fix them.";
-      break;
-    default:
-      errorMsg.style.display = "block";
-      errorMsg.textContent = "lol. lmao, even";
-      break; // do nothing
-  }
 
   // attach form listeners
   // console.log("Attaching form listeners...");
@@ -181,23 +228,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       // get form values
       const tagString =
-        document.getElementById("tag-string").value + " -commentary:translated";
+        document.getElementById("tag-string").value + " -commentary";
       const postLimit = document.getElementById("post-limit").value;
       const includePartial = document.getElementById("include-partial").checked;
 
       // fetch posts
       const postsResponse = await fetch(
-        `${domain}/posts.json?tags=${encodeURIComponent(tagString)}&limit=${postLimit}&only=id,artist_commentary`
+        `${domain}/posts.json?tags=${encodeURIComponent(tagString)}&limit=${postLimit}&only=id,artist_commentary,tag_string_meta`,
+        { headers }
       );
+      const posts = await postsResponse.json();
       if (!postsResponse.ok) {
         errorMsg.style.display = "block";
         errorMsg.textContent =
-          "Failed to fetch posts. Please check your tag string and try again.";
+          "Failed to fetch posts. " +
+          (posts.message || "Please check your tag string and try again.") +
+          `(${postsResponse.status})`;
         return;
       }
+      console.log("Sample post:", posts[0]);
 
       // filter posts
-      const posts = await postsResponse.json();
       fetchedNum = posts.length;
       postList = posts.filter(
         (post) =>
@@ -215,17 +266,159 @@ document.addEventListener("DOMContentLoaded", async () => {
       return false;
     });
 
-  // attach navigation listeners
+  // attach field copy button listeners
+  document.getElementById("title-copier").addEventListener("click", () => {
+    document.getElementById("translated-title").value =
+      document.getElementById("deepl-title").value;
+  });
+  document
+    .getElementById("description-copier")
+    .addEventListener("click", () => {
+      document.getElementById("translated-description").value =
+        document.getElementById("deepl-description").value;
+    });
+
+  // attach bottom bar button & key listeners
+  // [<<] (go to first)
+  document.getElementById("first-post").addEventListener("click", () => {
+    if (confirmUnsaved()) {
+      currIdx = 0;
+      updateView();
+    }
+  });
+  // [<] (go to previous)
+  document.getElementById("prev-post").addEventListener("click", () => {
+    if (confirmUnsaved()) {
+      currIdx = Math.max(0, currIdx - 1);
+      updateView();
+    }
+  });
+  // [>] (go to next)
+  document.getElementById("next-post").addEventListener("click", () => {
+    if (confirmUnsaved()) {
+      currIdx = Math.min(postList.length - 1, currIdx + 1);
+      updateView();
+    }
+  });
+  // [>>] (go to last)
+  document.getElementById("last-post").addEventListener("click", () => {
+    if (confirmUnsaved()) {
+      currIdx = postList.length - 1;
+      updateView();
+    }
+  });
+  // [Open in browser]
+  document.getElementById("open-btn").addEventListener("click", () => {
+    if (postList[currIdx])
+      nw.Shell.openExternal(`${domain}/posts/${postList[currIdx].id}`);
+  });
+  // [Overwrite previous translation]
+  document.getElementById("overwrite-btn").addEventListener("click", () => {
+    if (
+      postList[currIdx] &&
+      confirm(
+        "Are you sure you want to overwrite the current translation with a saved version?"
+      )
+    ) {
+      document.getElementById("translated-title").value =
+        translationDict[postList[currIdx].id]?.title || "";
+      document.getElementById("translated-description").value =
+        translationDict[postList[currIdx].id]?.description || "";
+    }
+  });
+  // [Submit]
+  document
+    .getElementById("submit-btn")
+    .addEventListener("click", () => submitTranslation());
+
+  // key listeners
   document.addEventListener("keypress", (e) => {
-    if (e.key === "Enter" && e.ctrlKey === true) {
+    if (e.key === "\n" && e.ctrlKey === true) {
+      console.log("Submit translation");
       submitTranslation();
       return;
     }
+
     if (e.target !== document.body) return; // ignore if focused on inputs
-    if (e.key === "a") {
-      console.log("Prev post");
-    } else if (e.key === "d") {
-      console.log("Next post");
+    console.log("Key pressed:", e.key, e.ctrlKey, e.shiftKey, e.metaKey);
+
+    switch (e.key) {
+      case "a":
+        if (confirmUnsaved()) {
+          console.log("Prev post");
+          currIdx = Math.max(0, currIdx - 1);
+          updateView();
+        }
+        break;
+      case "A":
+        if (confirmUnsaved()) {
+          console.log("First post");
+          currIdx = 0;
+          updateView();
+        }
+        break;
+      case "d":
+        if (confirmUnsaved()) {
+          console.log("Next post");
+          currIdx = Math.min(postList.length - 1, currIdx + 1);
+          updateView();
+        }
+        break;
+      case "D":
+        if (confirmUnsaved()) {
+          console.log("Last post");
+          currIdx = postList.length - 1;
+          updateView();
+        }
+        break;
+      case "\u{0004}":
+        // Ctrl-D
+        // special next unique logic
+        break;
+      case "\u{000F}":
+        // Ctrl-O
+        console.log("Open in browser");
+        nw.Shell.openExternal(`${domain}/posts/${postList[currIdx].id}`);
+        break;
+      case "\u{0005}":
+        // Ctrl-E
+        console.log("Overwrite previous translation");
+        if (
+          confirm(
+            "Are you sure you want to overwrite the current translation with a saved version?"
+          )
+        ) {
+          document.getElementById("translated-title").value =
+            translationDict[postList[currIdx].id]?.title || "";
+          document.getElementById("translated-description").value =
+            translationDict[postList[currIdx].id]?.description || "";
+        }
+        break;
     }
   });
+
+  // load credentials and test
+  const result = await attemptLoad();
+  // display any errors
+  switch (result) {
+    case "noLogin":
+      errorMsg.style.display = "block";
+      errorMsg.textContent =
+        "Your Danbooru login details are not set. Please go to the settings tab to set them.";
+      break;
+    case "badLogin":
+      errorMsg.style.display = "block";
+      errorMsg.textContent =
+        "Your Danbooru login details are incorrect. Please go to the settings tab to fix them.";
+      break;
+    default:
+      // errorMsg.style.display = "block";
+      // errorMsg.textContent = "lol. lmao, even";
+      break; // do nothing
+  }
+
+  // finally, load deepl client
+  const deepl = require("deepl-node");
+  const deeplKey = localStorage.getItem("api.deepl");
+  deeplClient = deeplKey ? new deepl.Translator(deeplKey) : null;
 });

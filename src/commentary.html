@@ -4,6 +4,7 @@
     <link rel="stylesheet" href="common.css" />
     <title>Danbooru Tools - Commentary Tools</title>
 
+    <script src="scripts/load-settings.js"></script>
     <script src="scripts/danbooru-req.js"></script>
     <style>
       #errorMsg {
@@ -67,6 +68,8 @@
           <input
             type="text"
             id="tag-string"
+            class="setting"
+            name="cache.tagstring"
             value="commentary_request"
             style="flex: 1"
             required
@@ -86,8 +89,8 @@
         </div>
 
         <div class="input-group">
-          <input type="checkbox" id="commentary" />
-          <label for="commentary">Include non-empty commentaries</label>
+          <input type="checkbox" id="include-partial" />
+          <label for="include-partial">Include non-empty commentaries</label>
         </div>
 
         <input type="submit" value="Fetch posts" />
@@ -110,6 +113,15 @@
         <textarea id="deepl-description" readonly style="flex: 1"></textarea>
       </div>
 
+      <div class="inner-box" style="flex: 0">
+        <h4>&nbsp;</h4>
+        <button id="title-copier">&rarr;</button>
+        <h4>&nbsp;</h4>
+        <div style="flex: 1; display: flex; align-items: center">
+          <button id="description-copier">&rarr;</button>
+        </div>
+      </div>
+
       <div class="inner-box">
         <h4>Translated title</h4>
         <input type="text" id="translated-title" />
@@ -129,17 +141,29 @@
       <label for="partial_commentary">partial_commentary</label>
     </div>
     <div class="center">
-      <button id="open-btn">Open in browser</button>
-      <button id="overwrite-btn">Overwrite previous translation</button>
-      <button id="submit-btn">Submit</button>
+      <button id="open-btn" title="Shortcut: Ctrl+D">Open in browser</button>
+      <button id="overwrite-btn" title="Shortcut: Ctrl+E">
+        Overwrite previous translation
+      </button>
+      <button id="submit-btn" title="Shortcut: Ctrl+Enter">Submit</button>
     </div>
     <div class="center">
-      <button id="first-post" disabled>&lt;&lt;</button>
-      <button id="prev-post" disabled>&lt;</button>
-      <span id="post-counter">0 / 0 (0)</span>
-      <button id="next-post" disabled>&gt;</button>
-      <button id="next-unique-post" disabled>|&gt;</button>
-      <button id="last-post" disabled>&gt;&gt;</button>
+      <button id="first-post" title="Shortcut: Shift+A" disabled>
+        &lt;&lt;
+      </button>
+      <button id="prev-post" title="Shortcut: A" disabled>&lt;</button>
+      <span
+        id="post-counter"
+        title="Current post # / Total posts to go through (Total posts fetched)"
+        >0 / 0 (0)</span
+      >
+      <button id="next-post" title="Shortcut: D" disabled>&gt;</button>
+      <button id="next-unique-post" title="Shortcut: Ctrl+D" disabled>
+        |&gt;
+      </button>
+      <button id="last-post" title="Shortcut: Shift+D" disabled>
+        &gt;&gt;
+      </button>
     </div>
   </body>
 </html>
