@@ -1,3 +1,5 @@
+import { instantiated, translate } from "./deepl.js";
+
 // initialize reused variables
 const domain =
   "https://" + (localStorage.getItem("general.domain") || "danbooru.donmai.us");
@@ -11,7 +13,6 @@ const headers = new Headers({
     ),
   "Content-Type": "application/json",
 });
-let deeplClient = undefined; // initialize later if api key set
 let postList = [],
   fetchedNum = 0,
   currIdx = 0,
@@ -103,27 +104,21 @@ async function updateView() {
     post.tag_string_meta.includes("partial_commentary");
 
   // perform deepl translation
-  if (deeplClient) {
+  if (instantiated()) {
     if (post.artist_commentary.original_title) {
       if (post.artist_commentary.original_description) {
-        const translated = await deeplClient.translateText(
-          [
-            post.artist_commentary.original_title,
-            post.artist_commentary.original_description,
-          ],
-          null,
-          "en-US"
-        );
+        const translated = await translate([
+          post.artist_commentary.original_title,
+          post.artist_commentary.original_description,
+        ]);
 
         document.getElementById("deepl-title").value = translated[0].text || "";
         document.getElementById("deepl-description").value =
           translated[1].text || "";
         post.detectedLang = translated[1].detectedSourceLang;
       } else {
-        const translated = await deeplClient.translateText(
-          post.artist_commentary.original_title,
-          null,
-          "en-US"
+        const translated = await translate(
+          post.artist_commentary.original_title
         );
         document.getElementById("deepl-title").value = translated.text || "";
         document.getElementById("deepl-description").value = "";
@@ -131,10 +126,8 @@ async function updateView() {
       }
     } else {
       // assume only description populated
-      const translated = await deeplClient.translateText(
-        post.artist_commentary.original_description,
-        null,
-        "en-US"
+      const translated = await translate(
+        post.artist_commentary.original_description
       );
       document.getElementById("deepl-title").value = "";
       document.getElementById("deepl-description").value =
@@ -433,9 +426,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     default:
       break; // do nothing
   }
-
-  // finally, load deepl client
-  const deepl = require("deepl-node");
-  const deeplKey = localStorage.getItem("api.deepl");
-  deeplClient = deeplKey ? new deepl.Translator(deeplKey) : null;
 });
