@@ -139,35 +139,6 @@ function updateView() {
 
   // perform deepl translation
   if (instantiated()) {
-    // if (post.artist_commentary.original_title) {
-    //   if (post.artist_commentary.original_description) {
-    //     const translated = await translate([
-    //       post.artist_commentary.original_title,
-    //       post.artist_commentary.original_description,
-    //     ]);
-
-    //     document.getElementById("deepl-title").value = translated[0].text || "";
-    //     document.getElementById("deepl-description").value =
-    //       translated[1].text || "";
-    //     post.detectedLang = translated[1].detectedSourceLang;
-    //   } else {
-    //     const translated = await translate(
-    //       post.artist_commentary.original_title
-    //     );
-    //     document.getElementById("deepl-title").value = translated.text || "";
-    //     document.getElementById("deepl-description").value = "";
-    //     post.detectedLang = translated.detectedSourceLang;
-    //   }
-    // } else {
-    //   // assume only description populated
-    //   const translated = await translate(
-    //     post.artist_commentary.original_description
-    //   );
-    //   document.getElementById("deepl-title").value = "";
-    //   document.getElementById("deepl-description").value =
-    //     translated.text || "";
-    //   post.detectedLang = translated.detectedSourceLang;
-    // }
     (async () => {
       if (identicalTitle) return; // don't retranslate
       if (post.artist_commentary.original_title) {
