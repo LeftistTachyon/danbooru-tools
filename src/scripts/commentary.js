@@ -139,34 +139,55 @@ function updateView() {
 
   // perform deepl translation
   if (instantiated()) {
-    (async () => {
-      if (identicalTitle) return; // don't retranslate
-      if (post.artist_commentary.original_title) {
+    if (
+      !identicalTitle &&
+      !identicalDesc &&
+      post.artist_commentary.original_title &&
+      post.artist_commentary.original_description
+    ) {
+      // double translate, should reduce lag & look better
+      (async () => {
         // translate
-        const translated = await translate(
-          post.artist_commentary.original_title
-        );
-        document.getElementById("deepl-title").value = translated.text || "";
-        if (!post.artist_commentary.original_description)
-          post.detectedLang = translated.detectedSourceLang;
-      } else {
-        document.getElementById("deepl-title").value = "";
-      }
-    })();
-    (async () => {
-      if (identicalDesc) return; // don't retranslate
-      if (post.artist_commentary.original_description) {
-        // translate
-        const translated = await translate(
-          post.artist_commentary.original_description
-        );
+        const translated = await translate([
+          post.artist_commentary.original_title,
+          post.artist_commentary.original_description,
+        ]);
+        document.getElementById("deepl-title").value = translated[0].text || "";
         document.getElementById("deepl-description").value =
-          translated.text || "";
-        post.detectedLang = translated.detectedSourceLang;
-      } else {
-        document.getElementById("deepl-description").value = "";
-      }
-    })();
+          translated[1].text || "";
+        post.detectedLang = translated[1].detectedSourceLang;
+      })();
+    } else {
+      // translate one-by-one
+      (async () => {
+        if (identicalTitle) return; // don't retranslate
+        if (post.artist_commentary.original_title) {
+          // translate
+          const translated = await translate(
+            post.artist_commentary.original_title
+          );
+          document.getElementById("deepl-title").value = translated.text || "";
+          if (!post.artist_commentary.original_description)
+            post.detectedLang = translated.detectedSourceLang;
+        } else {
+          document.getElementById("deepl-title").value = "";
+        }
+      })();
+      (async () => {
+        if (identicalDesc) return; // don't retranslate
+        if (post.artist_commentary.original_description) {
+          // translate
+          const translated = await translate(
+            post.artist_commentary.original_description
+          );
+          document.getElementById("deepl-description").value =
+            translated.text || "";
+          post.detectedLang = translated.detectedSourceLang;
+        } else {
+          document.getElementById("deepl-description").value = "";
+        }
+      })();
+    }
   } else {
     document.getElementById("deepl-title").value = "<no Deepl API key set>";
     document.getElementById("deepl-description").value =
