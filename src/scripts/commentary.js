@@ -13,7 +13,10 @@ let postList = [],
   currIdx = 0,
   translationDict = {};
 
-// for showing error messages below search box
+/**
+ * Displays an error message below the search box.
+ * @param {string} message the error message to display
+ */
 function showError(message) {
   document.getElementById("infoMsg").style.display = "none";
 
@@ -21,7 +24,10 @@ function showError(message) {
   errorMsg.style.display = "block";
   errorMsg.textContent = message;
 }
-// for showing info messages below search box
+/**
+ * Displays an info message below the search box.
+ * @param {string} message the message to display
+ */
 function showInfo(message) {
   document.getElementById("errorMsg").style.display = "none";
 
@@ -30,6 +36,11 @@ function showInfo(message) {
   infoMsg.textContent = message;
 }
 
+/**
+ * Attempts to log into Danbooru with saved credentials.
+ *
+ * @returns whether the operation was successful or not with various codes
+ */
 async function attemptLoad() {
   // check for login details
   if (!hasLogin()) {
@@ -49,6 +60,10 @@ async function attemptLoad() {
   }
 }
 
+/**
+ * Updates the view with the current post's data.
+ * @returns nothing
+ */
 async function updateView() {
   // unfocus active element
   document.activeElement.blur();
@@ -126,6 +141,13 @@ async function updateView() {
   }
 }
 
+/**
+ * Checks whether unsaved changes are present and confirms with
+ * the user that they want to move away from this page despite it
+ * having unsaved changes.
+ *
+ * @returns whether the user consents to the action
+ */
 function confirmUnsaved() {
   const currPost = postList[currIdx];
   return (
@@ -138,6 +160,15 @@ function confirmUnsaved() {
   );
 }
 
+/**
+ * Submits a translation of an artist commentary to Danbooru.
+ *
+ * @param {string} translated_title the translated title to
+ * submit (optional, will override textbox value if given)
+ * @param {string} translated_description the translated
+ * description to submit (optional, will override textarea
+ * value if given)
+ */
 async function submitTranslation(
   translated_title = undefined,
   translated_description = undefined
@@ -205,6 +236,7 @@ async function submitTranslation(
   }
 }
 
+// literally load everything
 document.addEventListener("DOMContentLoaded", async () => {
   // attach form listeners
   // console.log("Attaching form listeners...");
@@ -316,6 +348,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // key listeners
   document.addEventListener("keypress", (e) => {
+    // Ctrl+Enter to submit
     if (e.key === "\n" && e.ctrlKey === true) {
       console.log("Submit translation");
       submitTranslation();
@@ -328,28 +361,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     switch (e.key) {
       case "a":
         if (confirmUnsaved()) {
-          console.log("Prev post");
+          // console.log("Prev post");
           currIdx = Math.max(0, currIdx - 1);
           updateView();
         }
         break;
       case "A":
         if (confirmUnsaved()) {
-          console.log("First post");
+          // console.log("First post");
           currIdx = 0;
           updateView();
         }
         break;
       case "d":
         if (confirmUnsaved()) {
-          console.log("Next post");
+          // console.log("Next post");
           currIdx = Math.min(postList.length - 1, currIdx + 1);
           updateView();
         }
         break;
       case "D":
         if (confirmUnsaved()) {
-          console.log("Last post");
+          // console.log("Last post");
           currIdx = postList.length - 1;
           updateView();
         }
