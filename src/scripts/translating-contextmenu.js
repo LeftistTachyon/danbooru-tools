@@ -86,6 +86,7 @@ export async function createJapaneseMenu() {
     document.getSelection().toString(),
     {
       to: "romaji",
+      mode: "spaced",
     }
   );
 

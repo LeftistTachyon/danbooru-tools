@@ -87,14 +87,10 @@ function updateView() {
   // note if title and desc are changing
   const post = postList[currIdx];
   const identicalTitle =
-      document
-        .getElementById("original-title")
-        .value.replaceAll("\r\n", "\n") === // dang windows
+      document.getElementById("original-title").value === // dang windows
       post.artist_commentary.original_title.replaceAll("\r\n", "\n"),
     identicalDesc =
-      document
-        .getElementById("original-description")
-        .value.replaceAll("\r\n", "\n") === // why do you have to replace /n with /r/n
+      document.getElementById("original-description").value === // why do you have to replace /n with /r/n
       post.artist_commentary.original_description.replaceAll("\r\n", "\n");
   // function findFirstDiffPos(a, b) {
   //   // console.log(a, "vs", b, a.localeCompare(b, "ja"));
@@ -160,6 +156,7 @@ function updateView() {
     } else {
       // translate one-by-one
       (async () => {
+        // for title
         if (identicalTitle) return; // don't retranslate
         if (post.artist_commentary.original_title) {
           // translate
@@ -174,6 +171,7 @@ function updateView() {
         }
       })();
       (async () => {
+        // for description
         if (identicalDesc) return; // don't retranslate
         if (post.artist_commentary.original_description) {
           // translate
@@ -326,7 +324,7 @@ async function goToNextUnique() {
   showInfo(
     currIdx === postList.length
       ? "No more unique commentaries."
-      : `Next unique commentary: post #${postList[currIdx].id}.`
+      : `Next unique untranslated commentary: post #${postList[currIdx].id}.`
   );
   currIdx = Math.min(postList.length - 1, currIdx); // avoid overflows
   await updateView();
