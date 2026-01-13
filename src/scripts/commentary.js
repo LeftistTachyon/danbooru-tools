@@ -5,6 +5,11 @@ import {
   updateArtistCommentary,
 } from "./danbooru.js";
 import { instantiated, translate } from "./deepl.js";
+import {
+  createChineseMenu,
+  createDefaultMenu,
+  createJapaneseMenu,
+} from "./translating-contextmenu.js";
 
 // initialize reused variables
 let postList = [],
@@ -470,6 +475,35 @@ document.addEventListener("DOMContentLoaded", async () => {
         break;
     }
   });
+
+  // contextmenu listeners
+  async function contextmenuListener(e) {
+    e.preventDefault();
+    console.log(
+      postList[currIdx].detectedLang,
+      document.getSelection().toString()
+    );
+
+    switch (postList[currIdx].detectedLang) {
+      case "ja":
+        (await createJapaneseMenu()).popup(e.x, e.y);
+        break;
+      case "zh":
+        createChineseMenu().popup(e.x, e.y);
+        break;
+      default:
+        createDefaultMenu().popup(e.x, e.y);
+        break;
+    }
+
+    return false;
+  }
+  document
+    .getElementById("original-title")
+    .addEventListener("contextmenu", contextmenuListener);
+  document
+    .getElementById("original-description")
+    .addEventListener("contextmenu", contextmenuListener);
 
   // load credentials and test
   const result = await attemptLoad();
