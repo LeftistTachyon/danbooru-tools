@@ -118,6 +118,7 @@ async function updateView() {
         document.getElementById("deepl-title").value = translated[0].text || "";
         document.getElementById("deepl-description").value =
           translated[1].text || "";
+        post.detectedLang = translated[1].detectedSourceLang;
       } else {
         const translated = await deeplClient.translateText(
           post.artist_commentary.original_title,
@@ -126,6 +127,7 @@ async function updateView() {
         );
         document.getElementById("deepl-title").value = translated.text || "";
         document.getElementById("deepl-description").value = "";
+        post.detectedLang = translated.detectedSourceLang;
       }
     } else {
       // assume only description populated
@@ -137,6 +139,7 @@ async function updateView() {
       document.getElementById("deepl-title").value = "";
       document.getElementById("deepl-description").value =
         translated.text || "";
+      post.detectedLang = translated.detectedSourceLang;
     }
   } else {
     document.getElementById("deepl-title").value = "<no Deepl API key set>";
@@ -234,8 +237,6 @@ async function submitTranslation(
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const errorMsg = document.getElementById("errorMsg");
-
   // attach form listeners
   // console.log("Attaching form listeners...");
   document
