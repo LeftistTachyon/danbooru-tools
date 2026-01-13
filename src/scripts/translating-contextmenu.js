@@ -108,6 +108,17 @@ export async function createJapaneseMenu() {
   menu.insert(new nw.MenuItem({ type: "separator" }), 1);
   menu.append(
     new nw.MenuItem({
+      label: "Open in Jisho...",
+      click: () => {
+        nw.Shell.openExternal(
+          `https://jisho.org/search/${encodeURI(document.getSelection().toString())}`
+        );
+      },
+      key: "j",
+    })
+  );
+  menu.append(
+    new nw.MenuItem({
       label: "Search with JP Wikipedia...",
       click: () => {
         nw.Shell.openExternal(
