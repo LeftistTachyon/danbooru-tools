@@ -4,15 +4,6 @@ const KuromojiAnalyzer = require("kuroshiro-analyzer-kuromoji");
 
 const kuroshiro = new Kuroshiro.default();
 const kuroshiroReady = kuroshiro.init(new KuromojiAnalyzer());
-// .then(function () {
-//   return kuroshiro.convert(
-//     "感じ取れたら手を繋ごう、重なるのは人生のライン and レミリア最高！",
-//     { to: "romaji" }
-//   );
-// })
-// .then(function (result) {
-//   console.log(result);
-// });
 
 export function createDefaultMenu() {
   const menu = new nw.Menu();

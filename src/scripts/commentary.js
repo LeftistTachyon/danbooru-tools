@@ -69,7 +69,7 @@ async function attemptLoad() {
  * Updates the view with the current post's data.
  * @returns nothing
  */
-async function updateView() {
+function updateView() {
   // unfocus active element
   document.activeElement.blur();
 
@@ -84,8 +84,34 @@ async function updateView() {
     document.getElementById("last-post").disabled =
       currIdx >= postList.length - 1;
 
-  // pull in commentary data
+  // note if title and desc are changing
   const post = postList[currIdx];
+  const identicalTitle =
+      document
+        .getElementById("original-title")
+        .value.replaceAll("\r\n", "\n") === // dang windows
+      post.artist_commentary.original_title.replaceAll("\r\n", "\n"),
+    identicalDesc =
+      document
+        .getElementById("original-description")
+        .value.replaceAll("\r\n", "\n") === // why do you have to replace /n with /r/n
+      post.artist_commentary.original_description.replaceAll("\r\n", "\n");
+  // function findFirstDiffPos(a, b) {
+  //   // console.log(a, "vs", b, a.localeCompare(b, "ja"));
+  //   var i = 0;
+  //   if (a === b) return -1;
+  //   while (a[i] === b[i]) i++;
+  //   console.log(`@${i}:`, a[i], "vs", b[i]);
+  //   console.log(a.codePointAt(i), "vs", b.codePointAt(i));
+  // }
+  // if (!identicalDesc) {
+  //   findFirstDiffPos(
+  //     document.getElementById("original-description").value,
+  //     post.artist_commentary.original_description
+  //   );
+  // }
+
+  // pull in commentary data
   if (!post) return;
   document.getElementById("original-title").value =
     post.artist_commentary.original_title || "";
@@ -95,8 +121,10 @@ async function updateView() {
     post.artist_commentary.translated_title || "";
   document.getElementById("translated-description").value =
     post.artist_commentary.translated_description || "";
-  document.getElementById("deepl-title").value = "Translating...";
-  document.getElementById("deepl-description").value = "Translating...";
+  if (!identicalTitle)
+    document.getElementById("deepl-title").value = "Translating...";
+  if (!identicalDesc)
+    document.getElementById("deepl-description").value = "Translating...";
 
   // pull in tag data
   document.getElementById("commentary").checked = /[^_]commentary[^_]/g.test(
@@ -111,35 +139,63 @@ async function updateView() {
 
   // perform deepl translation
   if (instantiated()) {
-    if (post.artist_commentary.original_title) {
-      if (post.artist_commentary.original_description) {
-        const translated = await translate([
-          post.artist_commentary.original_title,
-          post.artist_commentary.original_description,
-        ]);
+    // if (post.artist_commentary.original_title) {
+    //   if (post.artist_commentary.original_description) {
+    //     const translated = await translate([
+    //       post.artist_commentary.original_title,
+    //       post.artist_commentary.original_description,
+    //     ]);
 
-        document.getElementById("deepl-title").value = translated[0].text || "";
-        document.getElementById("deepl-description").value =
-          translated[1].text || "";
-        post.detectedLang = translated[1].detectedSourceLang;
-      } else {
+    //     document.getElementById("deepl-title").value = translated[0].text || "";
+    //     document.getElementById("deepl-description").value =
+    //       translated[1].text || "";
+    //     post.detectedLang = translated[1].detectedSourceLang;
+    //   } else {
+    //     const translated = await translate(
+    //       post.artist_commentary.original_title
+    //     );
+    //     document.getElementById("deepl-title").value = translated.text || "";
+    //     document.getElementById("deepl-description").value = "";
+    //     post.detectedLang = translated.detectedSourceLang;
+    //   }
+    // } else {
+    //   // assume only description populated
+    //   const translated = await translate(
+    //     post.artist_commentary.original_description
+    //   );
+    //   document.getElementById("deepl-title").value = "";
+    //   document.getElementById("deepl-description").value =
+    //     translated.text || "";
+    //   post.detectedLang = translated.detectedSourceLang;
+    // }
+    (async () => {
+      if (identicalTitle) return; // don't retranslate
+      if (post.artist_commentary.original_title) {
+        // translate
         const translated = await translate(
           post.artist_commentary.original_title
         );
         document.getElementById("deepl-title").value = translated.text || "";
-        document.getElementById("deepl-description").value = "";
-        post.detectedLang = translated.detectedSourceLang;
+        if (!post.artist_commentary.original_description)
+          post.detectedLang = translated.detectedSourceLang;
+      } else {
+        document.getElementById("deepl-title").value = "";
       }
-    } else {
-      // assume only description populated
-      const translated = await translate(
-        post.artist_commentary.original_description
-      );
-      document.getElementById("deepl-title").value = "";
-      document.getElementById("deepl-description").value =
-        translated.text || "";
-      post.detectedLang = translated.detectedSourceLang;
-    }
+    })();
+    (async () => {
+      if (identicalDesc) return; // don't retranslate
+      if (post.artist_commentary.original_description) {
+        // translate
+        const translated = await translate(
+          post.artist_commentary.original_description
+        );
+        document.getElementById("deepl-description").value =
+          translated.text || "";
+        post.detectedLang = translated.detectedSourceLang;
+      } else {
+        document.getElementById("deepl-description").value = "";
+      }
+    })();
   } else {
     document.getElementById("deepl-title").value = "<no Deepl API key set>";
     document.getElementById("deepl-description").value =
