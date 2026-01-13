@@ -71,12 +71,13 @@ async function updateView() {
   // update counters & buttons
   const postCounter = document.getElementById("post-counter");
   postCounter.textContent = `${currIdx + 1} / ${postList.length} (${fetchedNum})`;
-  document.getElementById("first-post").disabled = currIdx <= 0;
-  document.getElementById("prev-post").disabled = currIdx <= 0;
+  document.getElementById("first-post").disabled = document.getElementById(
+    "prev-post"
+  ).disabled = currIdx <= 0;
   document.getElementById("next-post").disabled =
-    currIdx >= postList.length - 1;
-  document.getElementById("last-post").disabled =
-    currIdx >= postList.length - 1;
+    document.getElementById("next-unique-post").disabled =
+    document.getElementById("last-post").disabled =
+      currIdx >= postList.length - 1;
 
   // pull in commentary data
   const post = postList[currIdx];
@@ -168,6 +169,7 @@ function confirmUnsaved() {
  * @param {string} translated_description the translated
  * description to submit (optional, will override textarea
  * value if given)
+ * @returns whether the submission was successful
  */
 async function submitTranslation(
   translated_title = undefined,
@@ -229,14 +231,56 @@ async function submitTranslation(
 
   if (resp) {
     showError(
-      `Failed to submit translation. ${resp.message || "Please try again."}`
+      `Failed to submit translation for post #${currPost.id}. ${resp.message || "Please try again."}`
     );
+    return false;
   } else {
-    showInfo("Translation submitted successfully!");
+    showInfo(`Successfully submitted translation for post #${currPost.id}.`);
+    return true;
   }
 }
 
+/**
+ * Skips to the next post with untranslated commentary.
+ * Submits any pretranslated commentaries between the currently
+ * shown and the next unique one.
+ */
+async function goToNextUnique() {
+  for (currIdx++; currIdx < postList.length; currIdx++) {
+    const currPost = postList[currIdx];
+    if (
+      (currPost.artist_commentary.original_title &&
+        !translationDict[currPost.artist_commentary.original_title]) ||
+      (currPost.artist_commentary.original_description &&
+        !translationDict[currPost.artist_commentary.original_description])
+    ) {
+      // not translated yet, show to user
+      break;
+    }
+
+    if (
+      !(await submitTranslation(
+        translationDict[currPost.artist_commentary.original_title],
+        translationDict[currPost.artist_commentary.original_description]
+      ))
+    ) {
+      // submission failed, stop here
+      break;
+    }
+  }
+
+  // done looping, update view
+  showInfo(
+    currIdx === postList.length
+      ? "No more unique commentaries."
+      : `Next unique commentary: post #${postList[currIdx].id}.`
+  );
+  currIdx = Math.min(postList.length - 1, currIdx); // avoid overflows
+  await updateView();
+}
+
 // literally load everything
+// console.log("Commentary tool script loaded.");
 document.addEventListener("DOMContentLoaded", async () => {
   // attach form listeners
   // console.log("Attaching form listeners...");
@@ -245,6 +289,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     .addEventListener("submit", async (e) => {
       e.preventDefault();
       // console.log("Fetching posts...");
+      showInfo("Fetching posts...");
 
       // get form values
       const tagString =
@@ -268,9 +313,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       postList = posts.filter(
         (post) =>
           post.artist_commentary &&
+          post.artist_commentary.original_description.trim().length > 0 &&
+          post.artist_commentary.original_description.trim().length > 0 &&
           (includePartial ||
             (!post.artist_commentary.translated_title &&
               !post.artist_commentary.translated_description))
+      );
+      showInfo(
+        `Fetched ${fetchedNum} posts, ${postList.length} matched the filter criteria.`
       );
 
       // reset index and update view
@@ -313,6 +363,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (confirmUnsaved()) {
       currIdx = Math.min(postList.length - 1, currIdx + 1);
       updateView();
+    }
+  });
+  // [|>] (go to next unique)
+  document.getElementById("next-unique-post").addEventListener("click", () => {
+    if (confirmUnsaved()) {
+      goToNextUnique();
     }
   });
   // [>>] (go to last)
@@ -390,6 +446,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       case "\u{0004}":
         // Ctrl-D
         // special next unique logic
+        if (confirmUnsaved()) {
+          goToNextUnique();
+        }
         break;
       case "\u{000F}":
         // Ctrl-O
