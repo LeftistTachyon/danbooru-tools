@@ -1,5 +1,5 @@
 // reused constants
-const domain =
+export const domain =
   "https://" + (localStorage.getItem("general.domain") || "danbooru.donmai.us");
 const headers = new Headers({
   Authorization:

@@ -1,4 +1,5 @@
 import {
+  domain,
   fetchPosts,
   fetchProfile,
   hasLogin,
