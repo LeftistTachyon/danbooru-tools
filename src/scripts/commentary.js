@@ -278,7 +278,7 @@ async function submitTranslation(
   // console.log("Submitting translation for post", currPost.id, body);
 
   // send request
-  const resp = await updateArtistCommentary(artist_commentary);
+  const resp = updateArtistCommentary(artist_commentary);
 
   if (resp) {
     showError(
@@ -327,7 +327,7 @@ async function goToNextUnique() {
       : `Next unique untranslated commentary: post #${postList[currIdx].id}.`
   );
   currIdx = Math.min(postList.length - 1, currIdx); // avoid overflows
-  await updateView();
+  updateView();
 }
 
 // literally load everything
