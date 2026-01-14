@@ -3,7 +3,7 @@ const worker = await Tesseract.createWorker(
   ["eng", "chi_sim", "chi_tra", "jpn"],
   1,
   {
-    logger: console.log.bind(console),
+    // logger: console.log.bind(console),
   }
 );
 
