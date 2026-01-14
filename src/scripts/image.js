@@ -1,13 +1,9 @@
-import "./tesseract-worker/index.js";
-
-const tesseract = require("tesseract.js");
-console.log(tesseract);
-const worker = await tesseract.createWorker(
+console.log(Tesseract);
+const worker = await Tesseract.createWorker(
   ["eng", "chi_sim", "chi_tra", "jpn"],
   1,
   {
     logger: console.log.bind(console),
-    // workerPath: "./scripts/tesseract-worker/index.js",
   }
 );
 
