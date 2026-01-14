@@ -86,6 +86,7 @@ function updateView() {
 
   // note if title and desc are changing
   const post = postList[currIdx];
+  if (!post) return;
   const identicalTitle =
       document.getElementById("original-title").value === // dang windows
       post.artist_commentary.original_title.replaceAll("\r\n", "\n"),
@@ -108,7 +109,6 @@ function updateView() {
   // }
 
   // pull in commentary data
-  if (!post) return;
   document.getElementById("original-title").value =
     post.artist_commentary.original_title || "";
   document.getElementById("original-description").value =

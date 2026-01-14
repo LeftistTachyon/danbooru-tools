@@ -12,6 +12,13 @@ body {
   height: calc(100vh - (2em + 16px) - 10px);
   box-sizing: border-box;
 }
+textarea {
+  resize: none;
+}
+h4 {
+  margin-bottom: 4px;
+  margin-top: 8px;
+}
 
 body,
 input,

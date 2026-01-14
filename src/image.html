@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="common.css" />
+    <title>Danbooru Tools - Image Tools</title>
+
+    <script src="scripts/image.js" type="module"></script>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      #main {
+        flex: 1;
+        display: flex;
+        align-items: stretch;
+      }
+
+      #image-container {
+        flex: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #textbox-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: space-around;
+        align-items: stretch;
+      }
+      #textbox-container > textarea {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="index.html">Home</a>
+      <a href="commentary.html">Commentary Tools</a>
+      <a href="image.html" id="current-page">Image Tools</a>
+      <a href="settings.html">Settings</a>
+    </header>
+
+    <h1>Image Tools</h1>
+
+    <div id="main">
+      <div id="image-container">Ctrl+V here or something idk</div>
+      <div id="textbox-container">
+        <h4>Original</h4>
+        <textarea id="original" readonly></textarea>
+        <h4>DeepL'd</h4>
+        <textarea id="deepl" readonly></textarea>
+      </div>
+    </div>
+  </body>
+</html>
