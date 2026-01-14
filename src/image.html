@@ -16,6 +16,7 @@
         flex: 1;
         display: flex;
         align-items: stretch;
+        max-width: 100vw;
       }
 
       #image-container {
@@ -34,6 +35,16 @@
       #textbox-container > textarea {
         flex: 1;
       }
+
+      #with-image {
+        position: relative;
+      }
+      .bbox {
+        background: #0004;
+        border: 1px solid white;
+        position: absolute;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -47,12 +58,18 @@
     <h1>Image Tools</h1>
 
     <div id="main">
-      <div id="image-container">Ctrl+V here or something idk</div>
+      <div id="image-container">
+        <div id="no-image">Ctrl+V here or something idk</div>
+        <div id="with-image" style="display: none">
+          <img src="" id="preview" />
+        </div>
+      </div>
       <div id="textbox-container">
         <h4>Original</h4>
-        <textarea id="original" readonly></textarea>
+        <textarea id="original"></textarea>
         <h4>DeepL'd</h4>
         <textarea id="deepl" readonly></textarea>
+        <button id="retranslate-btn">Retranslate</button>
       </div>
     </div>
   </body>
