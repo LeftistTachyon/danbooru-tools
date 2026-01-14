@@ -1,11 +1,7 @@
 // console.log(Tesseract);
-const worker = await Tesseract.createWorker(
-  ["eng", "chi_sim", "chi_tra", "jpn"],
-  1,
-  {
-    // logger: console.log.bind(console),
-  }
-);
+const worker = await Tesseract.createWorker("jpn", 1, {
+  // logger: console.log.bind(console),
+});
 
 /**
  * Show the image panel
@@ -41,15 +37,19 @@ document.addEventListener("paste", async (e) => {
 
       const { data } = await worker.recognize(clipboardItem);
       console.log(data);
+      document.getElementById("original").value = data.text;
 
       const imageParent = document.getElementById("with-image");
       for (const block of data.blocks) {
         const bbox = document.createElement("div");
         bbox.classList.add("bbox");
-        bbox.style.top = block.bbox.x0 + "px";
-        bbox.style.left = block.bbox.y0 + "px";
+        bbox.style.left = block.bbox.x0 + "px";
+        bbox.style.top = block.bbox.y0 + "px";
         bbox.style.width = block.bbox.x1 - block.bbox.x0 + "px";
         bbox.style.height = block.bbox.y1 - block.bbox.y0 + "px";
+        bbox.addEventListener("click", () => {
+          document.getElementById("original").value = block.text;
+        });
 
         imageParent.appendChild(bbox);
       }
