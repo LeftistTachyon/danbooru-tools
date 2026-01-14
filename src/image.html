@@ -39,6 +39,10 @@
       #with-image {
         position: relative;
       }
+      #with-image > img {
+        max-height: 100%; /* make sure to adjust bbox to match resizing */
+        max-width: 100%;
+      }
       .bbox {
         background: #0004;
         border: 1px solid white;
@@ -55,7 +59,16 @@
       <a href="settings.html">Settings</a>
     </header>
 
-    <h1>Image Tools</h1>
+    <h1 style="margin-top: 0">Image Tools</h1>
+    <div>
+      <label for="lang">OCR Language:</label>
+      <select id="lang">
+        <option value="jpn">Japanese</option>
+        <option value="chi_sim">Chinese - Simplified</option>
+        <option value="chi_tra">Chinese - Traditional</option>
+        <option value="eng">English</option>
+      </select>
+    </div>
 
     <div id="main">
       <div id="image-container">

@@ -59,3 +59,10 @@ document.addEventListener("paste", async (e) => {
     }
   }
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("lang").addEventListener("change", async (e) => {
+    console.log("New lang:", e.target.value);
+    await worker.reinitialize(e.target.value, 1);
+  });
+});
