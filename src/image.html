@@ -27,10 +27,13 @@
         justify-content: center;
       }
       #textbox-container {
+        position: sticky;
+        top: 2em;
+        max-height: calc(100vh - 6.07em - 40px);
+
         flex: 1;
         display: flex;
         flex-direction: column;
-        align-items: space-around;
         align-items: stretch;
       }
       #textbox-container > textarea {

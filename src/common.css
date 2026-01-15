@@ -9,7 +9,7 @@
   */
 body {
   margin: calc(2em + 16px) 10px 10px;
-  height: calc(100vh - (2em + 16px) - 10px);
+  min-height: calc(100vh - 2em - 26px);
   box-sizing: border-box;
 }
 textarea {
