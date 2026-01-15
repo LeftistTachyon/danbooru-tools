@@ -6,12 +6,18 @@
 
     <!-- v5 -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script src="scripts/image.js" type="module" defer></script>
+    <script src="scripts/image.js" type="module"></script>
+    <script src="scripts/load-settings.js"></script>
     <style>
       body {
         display: flex;
         flex-direction: column;
         gap: 6px;
+      }
+      .top-bar {
+        display: flex;
+        gap: 6px;
+        align-items: center;
       }
       #main {
         flex: 1;
@@ -29,8 +35,8 @@
       }
       #textbox-container {
         position: sticky;
-        top: 2em;
-        max-height: calc(100vh - 6.07em - 40px);
+        top: calc(2em + 6px);
+        max-height: calc(100vh - 8.87em - 62px);
 
         flex: 1;
         display: flex;
@@ -88,14 +94,36 @@
     </header>
 
     <h1 style="margin-top: 0">Image Tools</h1>
-    <div>
+    <div class="top-bar">
       <label for="lang">OCR Language:</label>
-      <select id="lang">
+      <select id="lang" name="ocr.lang" class="setting">
         <option value="jpn">Japanese</option>
         <option value="chi_sim">Chinese - Simplified</option>
         <option value="chi_tra">Chinese - Traditional</option>
         <option value="eng">English</option>
       </select>
+      <button id="rerun-btn">Rerun OCR</button>
+    </div>
+    <div class="top-bar">
+      <label for="confidence">Confidence threshold:</label>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value="50"
+        id="confidence"
+        name="ocr.confidence"
+        class="setting"
+      />
+      <span id="slider-readout">50%</span>
+    </div>
+    <div class="top-bar">
+      <button id="clear-boxes-btn">Clear boxes</button>
+      <button id="clear-img-btn">Clear image</button>
+
+      <i style="color: blue">
+        Press "N" to draw boxes around areas of interest.
+      </i>
     </div>
 
     <div id="main">
@@ -103,14 +131,14 @@
         <div id="no-image">
           <p>Paste or drag an image here to begin.</p>
           <div id="button-grid">
-            <button>
+            <button id="paste-btn">
               <img src="assets/clipboard.svg" alt="clipboard" />Paste from
               clipboard
             </button>
-            <button>
+            <button id="link-btn">
               <img src="assets/link.svg" alt="link" />Enter link...
             </button>
-            <button>
+            <button id="file-btn">
               <img src="assets/file.svg" alt="file" />Select file...
             </button>
           </div>
