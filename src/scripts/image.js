@@ -5,19 +5,6 @@ document.getElementById("confidence").addEventListener("input", (e) => {
   document.getElementById("slider-readout").innerHTML = e.target.value + "%";
 });
 
-// console.log(Tesseract);
-const worker = await Tesseract.createWorker(
-  localStorage.getItem("ocr.lang") || "jpn",
-  1,
-  {
-    // logger: console.log.bind(console),
-  }
-);
-// console.log(Tesseract.PSM);
-await worker.setParameters({
-  tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT_OSD,
-});
-
 /**
  * Show the image panel
  */
@@ -197,6 +184,7 @@ document.getElementById("file-btn").addEventListener("click", async () => {
 // handle link button
 document.getElementById("link-btn").addEventListener("click", async () => {
   const url = prompt("Enter the image URL below.");
+  if (!url) return;
 
   try {
     const res = await fetch(url);
@@ -232,4 +220,18 @@ document.getElementById("clear-img-btn").addEventListener("click", () => {
 document.getElementById("lang").addEventListener("change", async (e) => {
   console.log("New lang:", e.target.value);
   await worker.reinitialize(e.target.value, 1);
+});
+
+// load tesseract.js last
+// console.log(Tesseract);
+const worker = await Tesseract.createWorker(
+  localStorage.getItem("ocr.lang") || "jpn",
+  1,
+  {
+    // logger: console.log.bind(console),
+  }
+);
+// console.log(Tesseract.PSM);
+await worker.setParameters({
+  tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT_OSD,
 });
