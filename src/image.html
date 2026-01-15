@@ -40,7 +40,6 @@
         position: relative;
       }
       #with-image > img {
-        max-height: 100%; /* make sure to adjust bbox to match resizing */
         max-width: 100%;
       }
       .bbox {
@@ -54,6 +53,23 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+      }
+      #button-grid {
+        display: grid;
+        grid: 1fr 1fr / 1fr 1fr;
+        gap: 6px;
+      }
+      #button-grid > button {
+        display: flex;
+        /* justify-content: space-between; */
+        align-items: center;
+        gap: 6px;
+        padding-left: 6px;
+        padding-right: 12px;
+      }
+      #button-grid > button > img {
+        width: 1lh;
+        height: 1lh;
       }
     </style>
   </head>
@@ -81,8 +97,16 @@
         <div id="no-image">
           <p>Paste or drag an image here to begin.</p>
           <div id="button-grid">
-            <button>Copy from clipboard</button>
-            <button>Enter link</button>
+            <button>
+              <img src="assets/clipboard.svg" alt="clipboard" />Paste from
+              clipboard
+            </button>
+            <button>
+              <img src="assets/link.svg" alt="link" />Enter link...
+            </button>
+            <button>
+              <img src="assets/file.svg" alt="file" />Select file...
+            </button>
           </div>
         </div>
         <div id="with-image" style="display: none">

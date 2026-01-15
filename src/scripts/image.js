@@ -19,6 +19,29 @@ function hideImage() {
 }
 
 let imgWidth, imgHeight;
+const reader = new FileReader();
+
+/**
+ * Reads a copy/pasted file
+ * @param {File} file the file to extract the image from
+ * @param {HTMLImageElement} img an image element to put the image file into
+ * @returns the source, width, and height of the image
+ */
+async function readImageFile(file, img = document.getElementById("preview")) {
+  return new Promise((resolve) => {
+    reader.onload = (e) => {
+      img.onload = () => {
+        resolve({
+          src: e.target.result,
+          width: (imgWidth = img.naturalWidth),
+          height: (imgHeight = img.naturalHeight),
+        });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 document.addEventListener("paste", async (e) => {
   e.preventDefault();
@@ -30,40 +53,32 @@ document.addEventListener("paste", async (e) => {
       const img = document.getElementById("preview");
       // img.file = clipboardItem;
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        img.onload = () => {
-          imgWidth = img.naturalWidth;
-          imgHeight = img.naturalHeight;
-        };
-        img.src = e.target.result;
-        showImage();
-      };
-      reader.readAsDataURL(clipboardItem);
+      const [, data] = await Promise.all([
+        (async () => {
+          // console.log("reading image file...");
+          await readImageFile(clipboardItem);
+          // imgWidth = imageData.width;
+          // imgHeight = imageData.height;
+          showImage();
+          // console.log("finished reading image file");
+        })(),
+        (async () => {
+          // console.log("running ocr...");
+          const { data } = await worker.recognize(clipboardItem);
+          console.log("data:", data);
+          return data;
+        })(),
+      ]);
 
-      const { data } = await worker.recognize(clipboardItem);
-      console.log(data);
       document.getElementById("original").value = data.text;
-
       const imageParent = document.getElementById("with-image");
       for (const block of data.blocks) {
         const bbox = document.createElement("div");
         bbox.classList.add("bbox");
-        if (imgWidth && imgHeight) {
-          // bbox.style.top = (block.bbox.y0 / imgHeight) * 100 + "%";
-          // bbox.style.right = (1 - block.bbox.x1 / imgWidth) * 100 + "%";
-          // bbox.style.bottom = (1 - block.bbox.y1 / imgHeight) * 100 + "%";
-          // bbox.style.left = (block.bbox.x0 / imgWidth) * 100 + "%";
-          bbox.style.inset = `${(block.bbox.y0 / imgHeight) * 100}%
+        bbox.style.inset = `${(block.bbox.y0 / imgHeight) * 100}%
           ${(1 - block.bbox.x1 / imgWidth) * 100}%
           ${(1 - block.bbox.y1 / imgHeight) * 100}%
           ${(block.bbox.x0 / imgWidth) * 100}%`;
-        } else {
-          bbox.style.left = block.bbox.x0 + "px";
-          bbox.style.top = block.bbox.y0 + "px";
-          bbox.style.width = block.bbox.x1 - block.bbox.x0 + "px";
-          bbox.style.height = block.bbox.y1 - block.bbox.y0 + "px";
-        }
         bbox.addEventListener("click", () => {
           document.getElementById("original").value = block.text;
         });
