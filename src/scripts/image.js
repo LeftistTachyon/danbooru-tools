@@ -18,6 +18,8 @@ function hideImage() {
   document.getElementById("no-image").style.display = "block";
 }
 
+let imgWidth, imgHeight;
+
 document.addEventListener("paste", async (e) => {
   e.preventDefault();
 
@@ -26,10 +28,14 @@ document.addEventListener("paste", async (e) => {
     if (clipboardItem.type.startsWith("image/")) {
       // console.log(clipboardItem);
       const img = document.getElementById("preview");
-      img.file = clipboardItem;
+      // img.file = clipboardItem;
 
       const reader = new FileReader();
       reader.onload = (e) => {
+        img.onload = () => {
+          imgWidth = img.naturalWidth;
+          imgHeight = img.naturalHeight;
+        };
         img.src = e.target.result;
         showImage();
       };
@@ -43,10 +49,21 @@ document.addEventListener("paste", async (e) => {
       for (const block of data.blocks) {
         const bbox = document.createElement("div");
         bbox.classList.add("bbox");
-        bbox.style.left = block.bbox.x0 + "px";
-        bbox.style.top = block.bbox.y0 + "px";
-        bbox.style.width = block.bbox.x1 - block.bbox.x0 + "px";
-        bbox.style.height = block.bbox.y1 - block.bbox.y0 + "px";
+        if (imgWidth && imgHeight) {
+          // bbox.style.top = (block.bbox.y0 / imgHeight) * 100 + "%";
+          // bbox.style.right = (1 - block.bbox.x1 / imgWidth) * 100 + "%";
+          // bbox.style.bottom = (1 - block.bbox.y1 / imgHeight) * 100 + "%";
+          // bbox.style.left = (block.bbox.x0 / imgWidth) * 100 + "%";
+          bbox.style.inset = `${(block.bbox.y0 / imgHeight) * 100}%
+          ${(1 - block.bbox.x1 / imgWidth) * 100}%
+          ${(1 - block.bbox.y1 / imgHeight) * 100}%
+          ${(block.bbox.x0 / imgWidth) * 100}%`;
+        } else {
+          bbox.style.left = block.bbox.x0 + "px";
+          bbox.style.top = block.bbox.y0 + "px";
+          bbox.style.width = block.bbox.x1 - block.bbox.x0 + "px";
+          bbox.style.height = block.bbox.y1 - block.bbox.y0 + "px";
+        }
         bbox.addEventListener("click", () => {
           document.getElementById("original").value = block.text;
         });
@@ -60,9 +77,7 @@ document.addEventListener("paste", async (e) => {
   }
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("lang").addEventListener("change", async (e) => {
-    console.log("New lang:", e.target.value);
-    await worker.reinitialize(e.target.value, 1);
-  });
+document.getElementById("lang").addEventListener("change", async (e) => {
+  console.log("New lang:", e.target.value);
+  await worker.reinitialize(e.target.value, 1);
 });
