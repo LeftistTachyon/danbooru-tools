@@ -2,6 +2,11 @@
 const worker = await Tesseract.createWorker("jpn", 1, {
   // logger: console.log.bind(console),
 });
+// console.log(Tesseract.PSM);
+await worker.setParameters({
+  // tessedit_pageseg_mode: Tesseract.PSM.AUTO_OSD,
+  tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT_OSD,
+});
 
 /**
  * Show the image panel
@@ -57,8 +62,11 @@ document.addEventListener("paste", async (e) => {
           await readImageFile(clipboardItem);
           // imgWidth = imageData.width;
           // imgHeight = imageData.height;
-          for (const bbox of document.getElementsByClassName("bbox")) {
-            bbox.remove();
+          for (const bbox of Array.from(
+            document.getElementsByClassName("bbox")
+          )) {
+            // console.log(bbox);
+            bbox.parentNode.removeChild(bbox);
           }
           showImage();
           // console.log("finished reading image file");
