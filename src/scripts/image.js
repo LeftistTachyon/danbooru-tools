@@ -268,39 +268,18 @@ function noopHandler(evt) {
   // evt.dataTransfer.items[0].getAsString(console.log.bind(console));
   evt.stopPropagation();
   evt.preventDefault();
-  // return;
-
-  // console.log(Array.from(evt.dataTransfer.items));
-  // const fileItems = Array.from(evt.dataTransfer.items).filter(
-  //   (item) => item.kind === "file"
-  // );
-
-  // if (fileItems.length > 0) {
-  //   evt.stopPropagation();
-  //   evt.preventDefault();
-
-  //   if (fileItems.some((item) => item.type.startsWith("image/"))) {
-  //     evt.dataTransfer.dropEffect = "copy";
-  //     return true;
-  //   } else {
-  //     evt.dataTransfer.dropEffect = "none";
-  //     return false;
-  //   }
-  // }
-  // // console.log(evt.dataTransfer.items?.[0]);
 }
 dropbox.addEventListener("dragleave", (evt) => {
   noopHandler(evt);
-  if (evt.target === dropbox) dropbox.classList.remove("dragover");
-  console.log("dragleave", evt.target);
+  if (evt.fromElement === document.documentElement)
+    dropbox.classList.remove("dragover");
+  // console.log("dragleave", evt);
 });
 dropbox.addEventListener("dragenter", (evt) => {
   noopHandler(evt);
   dropbox.classList.add("dragover");
-  console.log("dragenter", evt.target);
+  // console.log("dragenter", evt);
 });
-// dropbox.addEventListener("dragenter", noopHandler);
-// dropbox.addEventListener("dragexit", noopHandler);
 dropbox.addEventListener("dragover", noopHandler);
 
 // handle changing languages
