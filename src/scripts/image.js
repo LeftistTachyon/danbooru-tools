@@ -21,7 +21,8 @@ function hideImage() {
 }
 
 let imgWidth, imgHeight, prevImgFile;
-const reader = new FileReader();
+const reader = new FileReader(),
+  bboxes = [];
 
 /**
  * Reads a copy/pasted file
@@ -61,10 +62,30 @@ async function recognize(file) {
  * Clears all visuals and data of visaul boxes.
  */
 function clearBBoxes() {
+  bboxes.length = 0;
   for (const bbox of Array.from(document.getElementsByClassName("bbox"))) {
     // console.log(bbox);
     bbox.parentNode.removeChild(bbox);
   }
+}
+
+/**
+ * Shows bboxes
+ */
+function showBBoxes() {
+  document.getElementById("with-image").classList.remove("hide-bbox");
+}
+/**
+ * Hides bboxes
+ */
+function hideBBoxes() {
+  document.getElementById("with-image").classList.add("hide-bbox");
+}
+/**
+ * Toggles visibility of bboxes
+ */
+function toggleBBoxes() {
+  document.getElementById("with-image").classList.toggle("hide-bbox");
 }
 
 /**
@@ -215,6 +236,8 @@ document.getElementById("clear-img-btn").addEventListener("click", () => {
   clearBBoxes();
   prevImgFile = undefined;
 });
+// handle showing and hiding bboxes
+document.getElementById("preview").addEventListener("click", toggleBBoxes);
 
 // handle changing languages
 document.getElementById("lang").addEventListener("change", async (e) => {
