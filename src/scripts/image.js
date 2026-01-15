@@ -51,20 +51,16 @@ document.addEventListener("paste", async (e) => {
     // if image
     if (clipboardItem.type.startsWith("image/")) {
       // console.log(clipboardItem);
-      const img = document.getElementById("preview");
-      // img.file = clipboardItem;
-
       const [, data] = await Promise.all([
         (async () => {
           // console.log("reading image file...");
           await readImageFile(clipboardItem);
           // imgWidth = imageData.width;
           // imgHeight = imageData.height;
-          showImage();
-
           for (const bbox of document.getElementsByClassName("bbox")) {
             bbox.remove();
           }
+          showImage();
           // console.log("finished reading image file");
         })(),
         (async () => {
