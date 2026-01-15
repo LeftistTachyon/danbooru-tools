@@ -195,7 +195,7 @@ document.getElementById("file-btn").addEventListener("click", async () => {
     });
 
     const file = await fileHandle.getFile();
-    console.log(file);
+    // console.log(file);
     await handleNewImageFile(file);
   } catch (e) {
     // aborted
@@ -238,6 +238,70 @@ document.getElementById("clear-img-btn").addEventListener("click", () => {
 });
 // handle showing and hiding bboxes
 document.getElementById("preview").addEventListener("click", toggleBBoxes);
+
+// handle dropping things
+// shoutouts to https://stackoverflow.com/questions/11972963/accept-drag-drop-of-image-from-another-browser-window
+const dropbox = document.getElementById("image-container");
+dropbox.addEventListener("drop", (evt) => {
+  evt.stopPropagation();
+  evt.preventDefault();
+  dropbox.classList.remove("dragover");
+
+  // console.log(evt.dataTransfer.files);
+  const imageFile = Array.from(evt.dataTransfer.files).find((file) =>
+    file.type.startsWith("image/")
+  );
+
+  if (imageFile) handleNewImageFile(imageFile);
+});
+
+/**
+ * Ignores the drag event
+ * @param {DragEvent} evt the drag event generated
+ * @returns whether the dragged item is an accepted item or not
+ */
+function noopHandler(evt) {
+  // console.log(
+  //   new Array(evt.dataTransfer.items).length,
+  //   evt.dataTransfer.items[0]
+  // );
+  // evt.dataTransfer.items[0].getAsString(console.log.bind(console));
+  evt.stopPropagation();
+  evt.preventDefault();
+  // return;
+
+  // console.log(Array.from(evt.dataTransfer.items));
+  // const fileItems = Array.from(evt.dataTransfer.items).filter(
+  //   (item) => item.kind === "file"
+  // );
+
+  // if (fileItems.length > 0) {
+  //   evt.stopPropagation();
+  //   evt.preventDefault();
+
+  //   if (fileItems.some((item) => item.type.startsWith("image/"))) {
+  //     evt.dataTransfer.dropEffect = "copy";
+  //     return true;
+  //   } else {
+  //     evt.dataTransfer.dropEffect = "none";
+  //     return false;
+  //   }
+  // }
+  // // console.log(evt.dataTransfer.items?.[0]);
+}
+dropbox.addEventListener("dragleave", (evt) => {
+  noopHandler(evt);
+  if (evt.target === dropbox) dropbox.classList.remove("dragover");
+  console.log("dragleave", evt.target);
+});
+dropbox.addEventListener("dragenter", (evt) => {
+  noopHandler(evt);
+  dropbox.classList.add("dragover");
+  console.log("dragenter", evt.target);
+});
+// dropbox.addEventListener("dragenter", noopHandler);
+// dropbox.addEventListener("dragexit", noopHandler);
+dropbox.addEventListener("dragover", noopHandler);
 
 // handle changing languages
 document.getElementById("lang").addEventListener("change", async (e) => {

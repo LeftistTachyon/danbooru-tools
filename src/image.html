@@ -33,6 +33,11 @@
         justify-content: center;
         padding: 6px;
       }
+      #image-container.dragover {
+        background: #ccc;
+        margin: -4px;
+        border: 4px dotted black;
+      }
       #textbox-container {
         position: sticky;
         top: calc(2em + 6px);
@@ -64,11 +69,11 @@
         display: none;
       }
 
-      #no-image {
+      /* #no-image {
         display: flex;
         flex-direction: column;
         align-items: center;
-      }
+      } */
       #button-grid {
         display: grid;
         grid: 1fr 1fr / 1fr 1fr;
@@ -132,7 +137,9 @@
     <div id="main">
       <div id="image-container">
         <div id="no-image">
-          <p>Paste or drag an image here to begin.</p>
+          <p style="text-align: center">
+            Paste or drag an image here to begin.
+          </p>
           <div id="button-grid">
             <button id="paste-btn">
               <img src="assets/clipboard.svg" alt="clipboard" />Paste from
