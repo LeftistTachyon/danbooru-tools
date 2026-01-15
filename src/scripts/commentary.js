@@ -281,6 +281,7 @@ async function submitTranslation(
   const resp = updateArtistCommentary(artist_commentary);
 
   if (resp) {
+    console.log("err:", resp);
     showError(
       `Failed to submit translation for post #${currPost.id}. ${resp.message || "Please try again."}`
     );

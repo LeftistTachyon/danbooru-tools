@@ -47,6 +47,7 @@ header {
   left: 0;
   width: 100vw;
   height: 2em;
+  z-index: 1;
 
   background-color: #333;
   margin: 0;
@@ -54,7 +55,6 @@ header {
   display: flex;
   justify-content: flex-start;
   align-items: stretch;
-  align-content: flex-start;
 }
 
 header > a {

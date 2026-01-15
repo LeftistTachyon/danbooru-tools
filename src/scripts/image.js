@@ -23,6 +23,7 @@ const reader = new FileReader();
 
 /**
  * Reads a copy/pasted file
+ *
  * @param {File} file the file to extract the image from
  * @param {HTMLImageElement} img an image element to put the image file into
  * @returns the source, width, and height of the image
@@ -60,6 +61,10 @@ document.addEventListener("paste", async (e) => {
           // imgWidth = imageData.width;
           // imgHeight = imageData.height;
           showImage();
+
+          for (const bbox of document.getElementsByClassName("bbox")) {
+            bbox.remove();
+          }
           // console.log("finished reading image file");
         })(),
         (async () => {
@@ -70,21 +75,22 @@ document.addEventListener("paste", async (e) => {
         })(),
       ]);
 
-      document.getElementById("original").value = data.text;
       const imageParent = document.getElementById("with-image");
       for (const block of data.blocks) {
         const bbox = document.createElement("div");
         bbox.classList.add("bbox");
         bbox.style.inset = `${(block.bbox.y0 / imgHeight) * 100}%
-          ${(1 - block.bbox.x1 / imgWidth) * 100}%
-          ${(1 - block.bbox.y1 / imgHeight) * 100}%
-          ${(block.bbox.x0 / imgWidth) * 100}%`;
+        ${(1 - block.bbox.x1 / imgWidth) * 100}%
+        ${(1 - block.bbox.y1 / imgHeight) * 100}%
+        ${(block.bbox.x0 / imgWidth) * 100}%`;
+
         bbox.addEventListener("click", () => {
           document.getElementById("original").value = block.text;
         });
 
         imageParent.appendChild(bbox);
       }
+      document.getElementById("original").value = data.text;
 
       // process no more files
       break;
