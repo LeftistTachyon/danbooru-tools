@@ -1,3 +1,10 @@
+import { translate } from "./deepl.js";
+import {
+  createChineseMenu,
+  createDefaultMenu,
+  createJapaneseMenu,
+} from "./translating-contextmenu.js";
+
 // handle readout changes
 document.getElementById("slider-readout").innerHTML =
   localStorage.getItem("ocr.confidence") + "%";
@@ -21,6 +28,8 @@ function hideImage() {
 }
 
 let imgWidth, imgHeight, prevImgFile;
+// the last translated language as detected by DeepL
+let lastLang;
 const reader = new FileReader(),
   bboxes = [];
 
@@ -115,29 +124,70 @@ async function handleNewImageFile(file) {
 }
 
 /**
- * Displays the OCR data from {@link recognize} to the user
- * @param {*} data the OCR data from {@link recognize}
+ * Creates a bounding box element with the associated OCR data
+ *
+ * @param {*} block the data associated with the bbox
+ * @param {number} idx the idx # in the bbox data array to assign to this bbox
+ * @returns the created {@link HTMLDivElement} that acts as a bounding box
  */
-async function displayOCRData(data) {
-  // show all viable OCR readings
-  const imageParent = document.getElementById("with-image");
-  const minConfidence = localStorage.getItem("ocr.confidence");
-  const confidentBlocks = data.blocks.filter(
-    (block) => block.confidence >= minConfidence
-  );
-  for (const block of confidentBlocks) {
-    const bbox = document.createElement("div");
-    bbox.classList.add("bbox");
-    bbox.style.inset = `${(block.bbox.y0 / imgHeight) * 100}%
+function createBBox(block, idx) {
+  const bbox = document.createElement("div");
+  bbox.classList.add("bbox");
+  bbox.style.inset = `${(block.bbox.y0 / imgHeight) * 100}%
         ${(1 - block.bbox.x1 / imgWidth) * 100}%
         ${(1 - block.bbox.y1 / imgHeight) * 100}%
         ${(block.bbox.x0 / imgWidth) * 100}%`;
 
-    bbox.addEventListener("click", () => {
-      document.getElementById("original").value = block.text;
-    });
+  bbox.addEventListener("click", async () => {
+    const bboxData = bboxes[idx];
+    document.getElementById("original").value = bboxData.original;
+    if (bboxData.translated) {
+      // previously translated
+      document.getElementById("deepl").value = bboxData.translated;
+      lastLang = bboxData.lang;
+    } else {
+      // start translation
+      const output = document.getElementById("deepl");
+      output.value = "Translating...";
 
-    imageParent.appendChild(bbox);
+      const translated = await translate(bboxData.original);
+      output.value = bboxData.translated = translated.text || "";
+      lastLang = translated.detectedSourceLang;
+    }
+  });
+
+  return bbox;
+}
+
+/**
+ * Displays the OCR data from {@link recognize} to the user
+ * @param {*} data the OCR data from {@link recognize}
+ */
+async function displayOCRData(data) {
+  // filter for >=ocr.confidence
+  const minConfidence = localStorage.getItem("ocr.confidence");
+  const confidentBlocks = data.blocks.filter(
+    (block) => block.confidence >= minConfidence
+  );
+
+  // add data to bboxes
+  bboxes.push(
+    ...confidentBlocks.map((block) => ({
+      original: block.text.trim(),
+      translated: "",
+      confidence: block.confidence,
+      lang: null,
+    }))
+  );
+  console.log("total bboxes:", bboxes);
+
+  const imageParent = document.getElementById("with-image");
+  for (
+    let idx = bboxes.length - confidentBlocks.length, i = 0;
+    idx < bboxes.length;
+    ++idx, ++i
+  ) {
+    imageParent.appendChild(createBBox(confidentBlocks[i], idx));
   }
 
   // clear original textbox
@@ -238,6 +288,19 @@ document.getElementById("clear-img-btn").addEventListener("click", () => {
 });
 // handle showing and hiding bboxes
 document.getElementById("preview").addEventListener("click", toggleBBoxes);
+// handle retranslate requests
+document
+  .getElementById("retranslate-btn")
+  .addEventListener("click", async () => {
+    const output = document.getElementById("deepl");
+    output.value = "Translating...";
+
+    const translated = await translate(
+      document.getElementById("original").value
+    );
+    output.value = translated.text || "";
+    lastLang = translated.detectedSourceLang;
+  });
 
 // handle dropping things
 // shoutouts to https://stackoverflow.com/questions/11972963/accept-drag-drop-of-image-from-another-browser-window
@@ -261,11 +324,6 @@ dropbox.addEventListener("drop", (evt) => {
  * @returns whether the dragged item is an accepted item or not
  */
 function noopHandler(evt) {
-  // console.log(
-  //   new Array(evt.dataTransfer.items).length,
-  //   evt.dataTransfer.items[0]
-  // );
-  // evt.dataTransfer.items[0].getAsString(console.log.bind(console));
   evt.stopPropagation();
   evt.preventDefault();
 }
@@ -287,6 +345,31 @@ document.getElementById("lang").addEventListener("change", async (e) => {
   console.log("New lang:", e.target.value);
   await worker.reinitialize(e.target.value, 1);
 });
+
+// handle right click menu on the original language textbox
+document
+  .getElementById("original")
+  .addEventListener("contextmenu", async (e) => {
+    e.preventDefault();
+    // console.log(
+    //   lastLang,
+    //   document.getSelection().toString()
+    // );
+
+    switch (lastLang) {
+      case "ja":
+        (await createJapaneseMenu()).popup(e.x, e.y);
+        break;
+      case "zh":
+        createChineseMenu().popup(e.x, e.y);
+        break;
+      default:
+        createDefaultMenu().popup(e.x, e.y);
+        break;
+    }
+
+    return false;
+  });
 
 // load tesseract.js last
 // console.log(Tesseract);

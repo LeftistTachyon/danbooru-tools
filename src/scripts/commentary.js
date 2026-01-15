@@ -527,10 +527,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   // contextmenu listeners
   async function contextmenuListener(e) {
     e.preventDefault();
-    console.log(
-      postList[currIdx].detectedLang,
-      document.getSelection().toString()
-    );
+    // console.log(
+    //   postList[currIdx].detectedLang,
+    //   document.getSelection().toString()
+    // );
 
     switch (postList[currIdx].detectedLang) {
       case "ja":
