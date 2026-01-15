@@ -1,0 +1,13 @@
+{
+  "name": "danbooru-tools",
+  "version": "1.0.1",
+  "description": "A collection of helpful tools for translating on Danbooru by LeafyTachyon",
+  "main": "./index.html",
+  "window": {
+    "title": "Danbooru Tools",
+    "icon": "src/assets/favicon.ico",
+    "width": 1000,
+    "height": 600
+  },
+  "author": "LeafyTachyon"
+}

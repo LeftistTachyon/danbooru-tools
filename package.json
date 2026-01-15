@@ -1,7 +1,7 @@
 {
   "name": "danbooru-tools",
   "version": "1.0.1",
-  "description": "",
+  "description": "A collection of helpful tools for translating on Danbooru by LeafyTachyon",
   "main": "src/index.html",
   "window": {
     "title": "Danbooru Tools",
@@ -9,17 +9,21 @@
     "width": 1000,
     "height": 600
   },
+  "author": "LeafyTachyon",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nw ."
+    "start": "nw .",
+    "build": "nwbuild --glob=false --platform=win ./src"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "translation",
+    "danbooru"
+  ],
+  "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
     "@types/node": "^25.0.6",
     "eslint": "^9.39.2",
+    "nw-builder": "^4.17.0",
     "prettier": "^3.7.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
