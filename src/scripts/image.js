@@ -138,6 +138,25 @@ function createBBox(block, idx) {
         ${(1 - block.bbox.y1 / imgHeight) * 100}%
         ${(block.bbox.x0 / imgWidth) * 100}%`;
 
+  // right click menu
+  const menu = new nw.Menu();
+  menu.append(
+    new nw.MenuItem({
+      label: (bbox.title = `Confidence: ${block.confidence.toFixed(2)}%`),
+      enabled: false,
+    })
+  );
+  menu.append(
+    new nw.MenuItem({
+      label: "Delete this box",
+      click() {
+        delete bboxes[idx];
+        bbox.remove();
+      },
+    })
+  );
+
+  // handle LClick
   bbox.addEventListener("click", async () => {
     const bboxData = bboxes[idx];
     document.getElementById("original").value = bboxData.original;
@@ -154,6 +173,12 @@ function createBBox(block, idx) {
       output.value = bboxData.translated = translated.text || "";
       lastLang = translated.detectedSourceLang;
     }
+  });
+  // handle RClick
+  bbox.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    menu.popup(e.x, e.y);
+    return false;
   });
 
   return bbox;
