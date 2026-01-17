@@ -38,6 +38,12 @@
         margin: -4px;
         border: 4px dotted black;
       }
+      #image-container.blue-border {
+        background: skyblue;
+      }
+      #image-container.blue-border > img {
+        cursor: crosshair;
+      }
       #textbox-container {
         position: sticky;
         top: calc(2em + 6px);
@@ -59,14 +65,22 @@
         margin-bottom: -6px;
         max-width: 100%;
       }
+
       .bbox {
         background: #0004;
         border: 1px solid white;
         position: absolute;
         cursor: pointer;
       }
-      #with-image.hide-bbox > .bbox {
+      #blue-bbox {
+        background: #19197044;
+        z-index: 1;
+      }
+      #with-image.hide-bbox > .bbox:not(#blue-bbox) {
         display: none;
+      }
+      #with-image.no-pointer > .bbox {
+        pointer-events: none;
       }
 
       /* #no-image {
@@ -90,6 +104,28 @@
       #button-grid > button > img {
         width: 1lh;
         height: 1lh;
+      }
+
+      @property --rotate {
+        syntax: "<angle>";
+        initial-value: 0deg;
+        inherits: false;
+      }
+      #image-container.blue-border.rotate-blue {
+        animation: rotate-gradient 1s linear infinite;
+        background-image: linear-gradient(
+          var(--rotate),
+          skyblue,
+          cornflowerblue
+        );
+      }
+      @keyframes rotate-gradient {
+        from {
+          --rotate: 0deg;
+        }
+        to {
+          --rotate: 360deg;
+        }
       }
     </style>
   </head>

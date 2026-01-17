@@ -61,6 +61,9 @@ async function readImageFile(file, img = document.getElementById("preview")) {
  * @returns OCR data
  */
 async function recognize(file) {
+  await worker.setParameters({
+    tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT_OSD,
+  });
   // console.log("running ocr...");
   const { data } = await worker.recognize(file);
   console.log("data:", data);
@@ -76,25 +79,6 @@ function clearBBoxes() {
     // console.log(bbox);
     bbox.parentNode.removeChild(bbox);
   }
-}
-
-/**
- * Shows bboxes
- */
-function showBBoxes() {
-  document.getElementById("with-image").classList.remove("hide-bbox");
-}
-/**
- * Hides bboxes
- */
-function hideBBoxes() {
-  document.getElementById("with-image").classList.add("hide-bbox");
-}
-/**
- * Toggles visibility of bboxes
- */
-function toggleBBoxes() {
-  document.getElementById("with-image").classList.toggle("hide-bbox");
 }
 
 /**
@@ -144,7 +128,7 @@ function createBBox(block, idx) {
     new nw.MenuItem({
       label: (bbox.title = `Confidence: ${block.confidence.toFixed(2)}%`),
       enabled: false,
-    })
+    }),
   );
   menu.append(
     new nw.MenuItem({
@@ -153,7 +137,7 @@ function createBBox(block, idx) {
         delete bboxes[idx];
         bbox.remove();
       },
-    })
+    }),
   );
 
   // handle LClick
@@ -192,17 +176,17 @@ async function displayOCRData(data) {
   // filter for >=ocr.confidence
   const minConfidence = localStorage.getItem("ocr.confidence");
   const confidentBlocks = data.blocks.filter(
-    (block) => block.confidence >= minConfidence
+    (block) => block.confidence >= minConfidence,
   );
 
   // add data to bboxes
   bboxes.push(
     ...confidentBlocks.map((block) => ({
-      original: block.text.trim(),
+      original: block.text.trim().replaceAll("\n", ""),
       translated: "",
       confidence: block.confidence,
       lang: null,
-    }))
+    })),
   );
   console.log("total bboxes:", bboxes);
 
@@ -239,7 +223,7 @@ document.getElementById("paste-btn").addEventListener("click", async () => {
     for (const clipboardItem of await navigator.clipboard.read()) {
       // console.log("clipboard item:", clipboardItem);
       const imageType = clipboardItem.types.find((type) =>
-        type.startsWith("image/")
+        type.startsWith("image/"),
       );
       if (imageType) {
         const blob = await clipboardItem.getType(imageType);
@@ -311,8 +295,6 @@ document.getElementById("clear-img-btn").addEventListener("click", () => {
   clearBBoxes();
   prevImgFile = undefined;
 });
-// handle showing and hiding bboxes
-document.getElementById("preview").addEventListener("click", toggleBBoxes);
 // handle retranslate requests
 document
   .getElementById("retranslate-btn")
@@ -321,7 +303,7 @@ document
     output.value = "Translating...";
 
     const translated = await translate(
-      document.getElementById("original").value
+      document.getElementById("original").value,
     );
     output.value = translated.text || "";
     lastLang = translated.detectedSourceLang;
@@ -337,7 +319,7 @@ dropbox.addEventListener("drop", (evt) => {
 
   // console.log(evt.dataTransfer.files);
   const imageFile = Array.from(evt.dataTransfer.files).find((file) =>
-    file.type.startsWith("image/")
+    file.type.startsWith("image/"),
   );
 
   if (imageFile) handleNewImageFile(imageFile);
@@ -396,6 +378,110 @@ document
     return false;
   });
 
+// handle toggling box drawing mode
+let nMode = false;
+document.addEventListener("keypress", (e) => {
+  if (e.key === "n") {
+    document.getElementById("image-container").classList.toggle("blue-border");
+    nMode = !nMode;
+  }
+});
+// handle drawing boxes over an image
+const previewNode = document.getElementById("preview");
+let drawingBox = null,
+  initialX,
+  initialY,
+  loading = false;
+
+previewNode.addEventListener("dragstart", (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+
+  if (nMode) {
+    // console.log(`starting box drawing @ (${e.x}, ${e.y})`);
+    const outerBBox = previewNode.getBoundingClientRect();
+    initialX = e.clientX;
+    initialY = e.clientY;
+
+    // create blueish bbox for designating scan area
+    drawingBox = document.createElement("div");
+    drawingBox.id = "blue-bbox";
+    drawingBox.classList.add("bbox");
+    drawingBox.style.left = e.clientX - outerBBox.left + "px";
+    drawingBox.style.top = e.clientY - outerBBox.top + "px";
+    drawingBox.style.width = "0";
+    drawingBox.style.height = "0";
+
+    // add to parent and disable pointer events to avoid weirdness
+    const parent = document.getElementById("with-image");
+    parent.classList.add("no-pointer");
+    parent.appendChild(drawingBox);
+  }
+});
+previewNode.addEventListener("mousemove", (e) => {
+  if (drawingBox && !loading) {
+    // console.log(`drawing box @ (${e.x}, ${e.y})`);
+
+    // update position
+    drawingBox.style.width = e.clientX - initialX + "px";
+    drawingBox.style.height = e.clientY - initialY + "px";
+  }
+});
+previewNode.addEventListener("mouseup", async (e) => {
+  const parent = document.getElementById("with-image");
+
+  if (drawingBox) {
+    console.log(`ending box drawing @ (${e.x}, ${e.y})`);
+
+    // figure out scaled pixel values for the drawn rectangle
+    const outerBBox = previewNode.getBoundingClientRect();
+    const left = Math.floor(
+        ((initialX - outerBBox.left) / outerBBox.width) * imgWidth,
+      ),
+      top = Math.floor(
+        ((initialY - outerBBox.top) / outerBBox.height) * imgHeight,
+      ),
+      width = Math.ceil(((e.clientX - initialX) / outerBBox.width) * imgWidth),
+      height = Math.ceil(
+        ((e.clientY - initialY) / outerBBox.height) * imgHeight,
+      );
+    const rectangle = { left, top, width, height };
+    console.log("scaled params:", rectangle);
+
+    // run recognition
+    const imageContainer = document.getElementById("image-container");
+    imageContainer.classList.add("rotate-blue");
+    loading = true;
+    // vert mode
+    await worker.setParameters({
+      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK_VERT_TEXT,
+    });
+    const { data: dataVert } = await worker.recognize(prevImgFile, {
+      rectangle,
+    });
+    // horiz mode
+    await worker.setParameters({
+      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+    });
+    const { data: dataHoriz } = await worker.recognize(prevImgFile, {
+      rectangle,
+    });
+    console.log(dataVert, "vs", dataHoriz);
+    await displayOCRData(
+      dataVert.confidence > dataHoriz.confidence ? dataVert : dataHoriz,
+    );
+
+    // clean up
+    imageContainer.classList.remove("rotate-blue");
+    loading = false;
+    drawingBox.remove();
+    drawingBox = null;
+    parent.classList.remove("no-pointer");
+  } else {
+    parent.classList.toggle("hide-bbox");
+  }
+});
+
 // load tesseract.js last
 // console.log(Tesseract);
 const worker = await Tesseract.createWorker(
@@ -403,9 +489,5 @@ const worker = await Tesseract.createWorker(
   1,
   {
     // logger: console.log.bind(console),
-  }
+  },
 );
-// console.log(Tesseract.PSM);
-await worker.setParameters({
-  tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT_OSD,
-});
