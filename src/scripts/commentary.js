@@ -77,7 +77,7 @@ function updateView() {
   const postCounter = document.getElementById("post-counter");
   postCounter.textContent = `${currIdx + 1} / ${postList.length} (${fetchedNum})`;
   document.getElementById("first-post").disabled = document.getElementById(
-    "prev-post"
+    "prev-post",
   ).disabled = currIdx <= 0;
   document.getElementById("next-post").disabled =
     document.getElementById("next-unique-post").disabled =
@@ -124,7 +124,7 @@ function updateView() {
 
   // pull in tag data
   document.getElementById("commentary").checked = /[^_]commentary[^_]/g.test(
-    post.tag_string_meta
+    post.tag_string_meta,
   );
   document.getElementById("commentary_request").checked =
     post.tag_string_meta.includes("commentary_request");
@@ -161,7 +161,7 @@ function updateView() {
         if (post.artist_commentary.original_title) {
           // translate
           const translated = await translate(
-            post.artist_commentary.original_title
+            post.artist_commentary.original_title,
           );
           document.getElementById("deepl-title").value = translated.text || "";
           if (!post.artist_commentary.original_description)
@@ -176,7 +176,7 @@ function updateView() {
         if (post.artist_commentary.original_description) {
           // translate
           const translated = await translate(
-            post.artist_commentary.original_description
+            post.artist_commentary.original_description,
           );
           document.getElementById("deepl-description").value =
             translated.text || "";
@@ -224,14 +224,14 @@ function confirmUnsaved() {
  */
 async function submitTranslation(
   translated_title = undefined,
-  translated_description = undefined
+  translated_description = undefined,
 ) {
   // set default values
   if (translated_title === undefined)
     translated_title = document.getElementById("translated-title").value;
   if (translated_description === undefined)
     translated_description = document.getElementById(
-      "translated-description"
+      "translated-description",
     ).value;
 
   // save translation to memory
@@ -278,12 +278,12 @@ async function submitTranslation(
   // console.log("Submitting translation for post", currPost.id, body);
 
   // send request
-  const resp = updateArtistCommentary(artist_commentary);
+  const resp = await updateArtistCommentary(artist_commentary);
 
   if (resp) {
     console.log("err:", resp);
     showError(
-      `Failed to submit translation for post #${currPost.id}. ${resp.message || "Please try again."}`
+      `Failed to submit translation for post #${currPost.id}. ${resp.message || "Please try again."}`,
     );
     return false;
   } else {
@@ -313,7 +313,7 @@ async function goToNextUnique() {
     if (
       !(await submitTranslation(
         translationDict[currPost.artist_commentary.original_title],
-        translationDict[currPost.artist_commentary.original_description]
+        translationDict[currPost.artist_commentary.original_description],
       ))
     ) {
       // submission failed, stop here
@@ -325,7 +325,7 @@ async function goToNextUnique() {
   showInfo(
     currIdx === postList.length
       ? "No more unique commentaries."
-      : `Next unique untranslated commentary: post #${postList[currIdx].id}.`
+      : `Next unique untranslated commentary: post #${postList[currIdx].id}.`,
   );
   currIdx = Math.min(postList.length - 1, currIdx); // avoid overflows
   updateView();
@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!ok) {
         showError(
           "Failed to fetch posts. " +
-            (message || "Please check your tag string and try again.")
+            (message || "Please check your tag string and try again."),
         );
         return;
       }
@@ -369,10 +369,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           post.artist_commentary.original_description.trim().length > 0 &&
           (includePartial ||
             (!post.artist_commentary.translated_title &&
-              !post.artist_commentary.translated_description))
+              !post.artist_commentary.translated_description)),
       );
       showInfo(
-        `Fetched ${fetchedNum} posts, ${postList.length} matched the filter criteria.`
+        `Fetched ${fetchedNum} posts, ${postList.length} matched the filter criteria.`,
       );
 
       // reset index and update view
@@ -440,7 +440,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (
       postList[currIdx] &&
       confirm(
-        "Are you sure you want to overwrite the current translation with a saved version?"
+        "Are you sure you want to overwrite the current translation with a saved version?",
       )
     ) {
       document.getElementById("translated-title").value =
@@ -512,7 +512,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // console.log("Overwrite previous translation");
         if (
           confirm(
-            "Are you sure you want to overwrite the current translation with a saved version?"
+            "Are you sure you want to overwrite the current translation with a saved version?",
           )
         ) {
           document.getElementById("translated-title").value =
@@ -559,12 +559,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   switch (result) {
     case "noLogin":
       showError(
-        "Your Danbooru login details are not set. Please go to the settings tab to set them."
+        "Your Danbooru login details are not set. Please go to the settings tab to set them.",
       );
       break;
     case "badLogin":
       showError(
-        "Your Danbooru login details are incorrect. Please go to the settings tab to fix them."
+        "Your Danbooru login details are incorrect. Please go to the settings tab to fix them.",
       );
       break;
     case "success":
