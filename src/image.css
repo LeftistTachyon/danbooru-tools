@@ -1,0 +1,114 @@
+@property --rotate {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+#image-container.blue-border.rotate-blue {
+  animation: rotate-gradient 1s linear infinite;
+  background-image: linear-gradient(var(--rotate), skyblue, cornflowerblue);
+}
+@keyframes rotate-gradient {
+  from {
+    --rotate: 0deg;
+  }
+  to {
+    --rotate: 360deg;
+  }
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.top-bar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+#main {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+#image-container {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+#image-container.dragover {
+  background: #ccc;
+  margin: -4px;
+  border: 4px dotted black;
+}
+#image-container.blue-border {
+  background: skyblue;
+}
+#image-container.blue-border img {
+  cursor: crosshair;
+}
+#textbox-container {
+  position: sticky;
+  top: calc(2em + 6px);
+  max-height: calc(100vh - 8.87em - 62px);
+
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+#textbox-container > textarea {
+  flex: 1;
+}
+
+#with-image {
+  position: relative;
+}
+#with-image > img {
+  margin-bottom: -6px;
+  max-width: 100%;
+}
+
+.bbox {
+  background: #0004;
+  border: 1px solid white;
+  position: absolute;
+  cursor: pointer;
+}
+#blue-bbox {
+  background: #19197044;
+  z-index: 1;
+}
+#with-image.hide-bbox > .bbox:not(#blue-bbox) {
+  display: none;
+}
+#with-image.no-pointer > .bbox {
+  pointer-events: none;
+}
+
+/* #no-image {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      } */
+#button-grid {
+  display: grid;
+  grid: 1fr 1fr / 1fr 1fr;
+  gap: 6px;
+}
+#button-grid > button {
+  display: flex;
+  /* justify-content: space-between; */
+  align-items: center;
+  gap: 6px;
+  padding-left: 6px;
+  padding-right: 12px;
+}
+#button-grid > button > img {
+  width: 1lh;
+  height: 1lh;
+}

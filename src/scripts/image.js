@@ -89,22 +89,35 @@ async function handleNewImageFile(file) {
   // set cache
   prevImgFile = file;
 
-  // extract data from image file
-  const [, data] = await Promise.all([
-    (async () => {
-      // console.log("reading image file...");
-      await readImageFile(file);
-      // imgWidth = imageData.width;
-      // imgHeight = imageData.height;
+  if (document.getElementById("autorun").checked) {
+    // extract data from image file
+    console.log("autorun ON");
+    const [, data] = await Promise.all([
+      (async () => {
+        // console.log("reading image file...");
+        await readImageFile(file);
+        // imgWidth = imageData.width;
+        // imgHeight = imageData.height;
 
-      clearBBoxes();
-      showImage();
-      // console.log("finished reading image file");
-    })(),
-    recognize(file),
-  ]);
+        clearBBoxes();
+        showImage();
+        // console.log("finished reading image file");
+      })(),
+      recognize(file),
+    ]);
 
-  await displayOCRData(data);
+    await displayOCRData(data);
+  } else {
+    console.log("autorun OFF");
+
+    // just load the file
+    await readImageFile(file);
+    // imgWidth = imageData.width;
+    // imgHeight = imageData.height;
+
+    clearBBoxes();
+    showImage();
+  }
 }
 
 /**
@@ -477,6 +490,7 @@ previewNode.addEventListener("mouseup", async (e) => {
     drawingBox.remove();
     drawingBox = null;
     parent.classList.remove("no-pointer");
+    parent.classList.remove("hide-bbox");
   } else {
     parent.classList.toggle("hide-bbox");
   }
