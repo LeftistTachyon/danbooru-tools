@@ -216,7 +216,7 @@ async function displayOCRData(data) {
       bbox: block.bbox,
     })),
   );
-  console.log("total bboxes:", bboxes);
+  // console.log("total bboxes:", bboxes);
 
   const imageParent = document.getElementById("with-image");
   for (
@@ -499,7 +499,7 @@ previewNode.addEventListener("mouseup", async (e) => {
   const parent = document.getElementById("with-image");
 
   if (drawingBox) {
-    console.log(`ending box drawing @ (${e.x}, ${e.y})`);
+    // console.log(`ending box drawing @ (${e.x}, ${e.y})`);
 
     // figure out scaled pixel values for the drawn rectangle
     const outerBBox = previewNode.getBoundingClientRect();
@@ -518,7 +518,7 @@ previewNode.addEventListener("mouseup", async (e) => {
         (Math.abs(e.clientY - initialY) / outerBBox.height) * imgHeight,
       );
     const rectangle = { left, top, width, height };
-    console.log("scaled params:", rectangle);
+    // console.log("scaled params:", rectangle);
 
     // start loading animation
     const imageContainer = document.getElementById("image-container");
@@ -627,6 +627,64 @@ previewNode.addEventListener("mouseup", async (e) => {
   } else {
     parent.classList.toggle("hide-bbox");
   }
+});
+
+const upscaler = new Upscaler({
+  model: ESRGANSlim3x,
+});
+// const deblur = new Upscaler({
+//   model: MaximDeblurring,
+// });
+document.getElementById("upscale-btn").addEventListener("click", async () => {
+  const imageContainer = document.getElementById("image-container"),
+    readout = document.getElementById("image-text");
+  imageContainer.classList.add("rotate");
+  readout.style.display = "block";
+  readout.innerHTML = "Upscaling 0.00% complete";
+
+  // wait for loading thing to appear
+  const upscaledImage = await upscaler.upscale(previewNode, {
+    patchSize: 64,
+    padding: 2,
+    progress(percent) {
+      readout.innerHTML = `Upscaling ${(percent * 100).toFixed(2)}% complete`;
+    },
+    progressOutput: "base64",
+    awaitNextFrame: true,
+  });
+  // console.log(
+  //   previewNode.src.slice(0, 100),
+  //   "to",
+  //   upscaledImage.slice(0, 100),
+  // );
+  // console.log(upscaledImage.length);
+  previewNode.src = upscaledImage;
+
+  // const upscaledDeblurredImage = await deblur.execute(previewNode, {
+  //   patchSize: 64,
+  //   padding: 2,
+  //   progress(percent) {
+  //     readout.innerHTML = `Deblurring ${(percent * 100).toFixed(2)}% complete`;
+  //   },
+  //   progressOutput: "base64",
+  //   awaitNextFrame: true,
+  // });
+  // previewNode.src = upscaledDeblurredImage;
+
+  // update other necessary pieces of info
+  imgHeight *= 3;
+  imgWidth *= 3;
+  for (const bbox of bboxes) {
+    bbox.bbox.x0 *= 3;
+    bbox.bbox.x1 *= 3;
+    bbox.bbox.y0 *= 3;
+    bbox.bbox.y1 *= 3;
+  }
+  const resp = await fetch(previewNode.src);
+  prevImgFile = await resp.blob();
+
+  imageContainer.classList.remove("rotate");
+  readout.style.display = "none";
 });
 
 // load tesseract.js last

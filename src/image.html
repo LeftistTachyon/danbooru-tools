@@ -7,6 +7,10 @@
 
     <!-- v5 -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-slim@latest/dist/umd/3x.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@upscalerjs/maxim-deblurring@latest/dist/umd/models/maxim-deblurring/src/umd.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/upscaler@latest/dist/browser/umd/upscaler.min.js"></script>
     <script src="scripts/image.js" type="module" defer></script>
     <script src="scripts/load-settings.js"></script>
   </head>
@@ -59,6 +63,7 @@
     <div class="top-bar">
       <button id="clear-boxes-btn">Clear boxes</button>
       <button id="clear-img-btn">Clear image</button>
+      <button id="upscale-btn">Upscale image</button>
 
       <i>
         Press
@@ -89,6 +94,7 @@
           </div>
         </div>
         <div id="with-image" style="display: none">
+          <p id="image-text" style="display: none">Test text</p>
           <img src="" id="preview" />
         </div>
       </div>
