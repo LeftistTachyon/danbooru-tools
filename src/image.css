@@ -107,6 +107,10 @@ body {
   }
 }
 
+.rotate {
+  animation: rotate-gradient 1s linear infinite;
+  background: linear-gradient(var(--rotate), white, #aaa);
+}
 .blue-border {
   background: skyblue;
 }

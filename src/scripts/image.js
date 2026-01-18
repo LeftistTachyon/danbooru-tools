@@ -133,6 +133,7 @@ function createBBox(idx) {
         ${(1 - bboxes[idx].bbox.x1 / imgWidth) * 100}%
         ${(1 - bboxes[idx].bbox.y1 / imgHeight) * 100}%
         ${(bboxes[idx].bbox.x0 / imgWidth) * 100}%`;
+  bbox.setAttribute("data-idx", idx);
 
   // right click menu
   const menu = new nw.Menu();
@@ -524,12 +525,77 @@ previewNode.addEventListener("mouseup", async (e) => {
       );
     }
     if (cMode) {
-      // combine any boxes inside+
-      for (const bbox of bboxes) {
+      // combine any boxes inside
+      const toCombine = [];
+      for (let i = 0; i < bboxes.length; ++i) {
+        if (
+          bboxes[i] &&
+          bboxes[i].bbox.x0 >= left &&
+          bboxes[i].bbox.x1 <= left + width &&
+          bboxes[i].bbox.y0 >= top &&
+          bboxes[i].bbox.y1 <= top + height
+        ) {
+          console.log("inside:", bboxes[i]);
+          toCombine.push(bboxes[i]);
+
+          delete bboxes[i];
+          document.querySelector(`div[data-idx="${i}"]`).remove();
+        }
       }
+
+      // get the text direction & sort the bboxes accordingly
+      const textDirection = document.getElementById("dir").value;
+      switch (textDirection) {
+        case "ltr":
+          toCombine.sort((a, b) => a.bbox.x0 - b.bbox.x0);
+          break;
+        case "rtl":
+          toCombine.sort((a, b) => b.bbox.x1 - a.bbox.x1);
+          break;
+        case "ttb":
+          toCombine.sort((a, b) => a.bbox.y0 - b.bbox.y0);
+          break;
+      }
+
+      // create the new bbox
+      /* {
+        original: string,
+        translated: string,
+        confidence: number,
+        lang: string,
+        bbox: block.bbox,
+      }
+      */
+      let original = "",
+        confidence = 1,
+        x0 = Number.MAX_VALUE,
+        y0 = Number.MAX_VALUE,
+        x1 = Number.MIN_VALUE,
+        y1 = Number.MIN_VALUE;
+      for (const bbox of toCombine) {
+        original += bbox.original + "\n";
+        confidence *= bbox.confidence;
+        if (bbox.bbox.x0 < x0) x0 = bbox.bbox.x0;
+        if (bbox.bbox.x1 > x1) x1 = bbox.bbox.x1;
+        if (bbox.bbox.y0 < y0) y0 = bbox.bbox.y0;
+        if (bbox.bbox.y1 > y1) y1 = bbox.bbox.y1;
+      }
+
+      // add to array
+      bboxes[bboxes.length] = {
+        original,
+        translated: "",
+        confidence,
+        lang: null,
+        bbox: { x0, y0, x1, y1 },
+      };
+
+      // add html element
+      document
+        .getElementById("with-image")
+        .appendChild(createBBox(bboxes.length - 1));
     }
 
-    // clean up
     imageContainer.classList.remove("rotate");
     loading = false;
     drawingBox.remove();
