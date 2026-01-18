@@ -123,23 +123,22 @@ async function handleNewImageFile(file) {
 /**
  * Creates a bounding box element with the associated OCR data
  *
- * @param {*} block the data associated with the bbox
  * @param {number} idx the idx # in the bbox data array to assign to this bbox
  * @returns the created {@link HTMLDivElement} that acts as a bounding box
  */
-function createBBox(block, idx) {
+function createBBox(idx) {
   const bbox = document.createElement("div");
   bbox.classList.add("bbox");
-  bbox.style.inset = `${(block.bbox.y0 / imgHeight) * 100}%
-        ${(1 - block.bbox.x1 / imgWidth) * 100}%
-        ${(1 - block.bbox.y1 / imgHeight) * 100}%
-        ${(block.bbox.x0 / imgWidth) * 100}%`;
+  bbox.style.inset = `${(bboxes[idx].bbox.y0 / imgHeight) * 100}%
+        ${(1 - bboxes[idx].bbox.x1 / imgWidth) * 100}%
+        ${(1 - bboxes[idx].bbox.y1 / imgHeight) * 100}%
+        ${(bboxes[idx].bbox.x0 / imgWidth) * 100}%`;
 
   // right click menu
   const menu = new nw.Menu();
   menu.append(
     new nw.MenuItem({
-      label: (bbox.title = `Confidence: ${block.confidence.toFixed(2)}%`),
+      label: (bbox.title = `Confidence: ${bboxes[idx].confidence.toFixed(2)}%`),
       enabled: false,
     }),
   );
@@ -199,17 +198,18 @@ async function displayOCRData(data) {
       translated: "",
       confidence: block.confidence,
       lang: null,
+      bbox: block.bbox,
     })),
   );
   console.log("total bboxes:", bboxes);
 
   const imageParent = document.getElementById("with-image");
   for (
-    let idx = bboxes.length - confidentBlocks.length, i = 0;
+    let idx = bboxes.length - confidentBlocks.length;
     idx < bboxes.length;
-    ++idx, ++i
+    ++idx
   ) {
-    imageParent.appendChild(createBBox(confidentBlocks[i], idx));
+    imageParent.appendChild(createBBox(idx));
   }
 
   // clear original textbox
@@ -392,11 +392,29 @@ document
   });
 
 // handle toggling box drawing mode
-let nMode = false;
+let nMode = false,
+  cMode = false;
 document.addEventListener("keypress", (e) => {
+  const imageContainer = document.getElementById("image-container");
   if (e.key === "n") {
-    document.getElementById("image-container").classList.toggle("blue-border");
+    // disable c mode
+    imageContainer.classList.remove("green-border");
+    cMode = false;
+
+    // toggle n mode
+    imageContainer.classList.toggle("blue-border");
     nMode = !nMode;
+  } else if (e.key === "c") {
+    // disable n mode
+    imageContainer.classList.remove("blue-border");
+    nMode = false;
+
+    // toggle c mode
+    imageContainer.classList.toggle("green-border");
+    cMode = !cMode;
+
+    // make sure bboxes are visible
+    document.getElementById("with-image").classList.remove("hide-bbox");
   }
 });
 // handle drawing boxes over an image
@@ -410,7 +428,7 @@ previewNode.addEventListener("dragstart", (e) => {
   e.stopPropagation();
   e.preventDefault();
 
-  if (nMode) {
+  if (nMode || cMode) {
     // console.log(`starting box drawing @ (${e.x}, ${e.y})`);
     const outerBBox = previewNode.getBoundingClientRect();
     initialX = e.clientX;
@@ -418,7 +436,8 @@ previewNode.addEventListener("dragstart", (e) => {
 
     // create blueish bbox for designating scan area
     drawingBox = document.createElement("div");
-    drawingBox.id = "blue-bbox";
+    if (nMode) drawingBox.id = "blue-bbox";
+    if (cMode) drawingBox.id = "green-bbox";
     drawingBox.classList.add("bbox");
     drawingBox.style.left = e.clientX - outerBBox.left + "px";
     drawingBox.style.top = e.clientY - outerBBox.top + "px";
@@ -436,8 +455,21 @@ previewNode.addEventListener("mousemove", (e) => {
     // console.log(`drawing box @ (${e.x}, ${e.y})`);
 
     // update position
-    drawingBox.style.width = e.clientX - initialX + "px";
-    drawingBox.style.height = e.clientY - initialY + "px";
+    const outerBBox = previewNode.getBoundingClientRect();
+    if (e.clientX > initialX) {
+      drawingBox.style.left = initialX - outerBBox.left + "px";
+      drawingBox.style.width = e.clientX - initialX + "px";
+    } else {
+      drawingBox.style.left = e.clientX - outerBBox.left + "px";
+      drawingBox.style.width = initialX - e.clientX + "px";
+    }
+    if (e.clientY > initialY) {
+      drawingBox.style.top = initialY - outerBBox.top + "px";
+      drawingBox.style.height = e.clientY - initialY + "px";
+    } else {
+      drawingBox.style.top = e.clientY - outerBBox.top + "px";
+      drawingBox.style.height = initialY - e.clientY + "px";
+    }
   }
 });
 previewNode.addEventListener("mouseup", async (e) => {
@@ -449,43 +481,56 @@ previewNode.addEventListener("mouseup", async (e) => {
     // figure out scaled pixel values for the drawn rectangle
     const outerBBox = previewNode.getBoundingClientRect();
     const left = Math.floor(
-        ((initialX - outerBBox.left) / outerBBox.width) * imgWidth,
+        ((Math.min(initialX, e.clientX) - outerBBox.left) / outerBBox.width) *
+          imgWidth,
       ),
       top = Math.floor(
-        ((initialY - outerBBox.top) / outerBBox.height) * imgHeight,
+        ((Math.min(initialY, e.clientY) - outerBBox.top) / outerBBox.height) *
+          imgHeight,
       ),
-      width = Math.ceil(((e.clientX - initialX) / outerBBox.width) * imgWidth),
+      width = Math.ceil(
+        (Math.abs(e.clientX - initialX) / outerBBox.width) * imgWidth,
+      ),
       height = Math.ceil(
-        ((e.clientY - initialY) / outerBBox.height) * imgHeight,
+        (Math.abs(e.clientY - initialY) / outerBBox.height) * imgHeight,
       );
     const rectangle = { left, top, width, height };
     console.log("scaled params:", rectangle);
 
-    // run recognition
+    // start loading animation
     const imageContainer = document.getElementById("image-container");
-    imageContainer.classList.add("rotate-blue");
-    loading = true;
-    // vert mode
-    await worker.setParameters({
-      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK_VERT_TEXT,
-    });
-    const { data: dataVert } = await worker.recognize(prevImgFile, {
-      rectangle,
-    });
-    // horiz mode
-    await worker.setParameters({
-      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
-    });
-    const { data: dataHoriz } = await worker.recognize(prevImgFile, {
-      rectangle,
-    });
-    console.log(dataVert, "vs", dataHoriz);
-    await displayOCRData(
-      dataVert.confidence > dataHoriz.confidence ? dataVert : dataHoriz,
-    );
+    imageContainer.classList.add("rotate");
+
+    if (nMode) {
+      // run recognition
+      loading = true;
+      // vert mode
+      await worker.setParameters({
+        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK_VERT_TEXT,
+      });
+      const { data: dataVert } = await worker.recognize(prevImgFile, {
+        rectangle,
+      });
+      // horiz mode
+      await worker.setParameters({
+        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+      });
+      const { data: dataHoriz } = await worker.recognize(prevImgFile, {
+        rectangle,
+      });
+      // console.log(dataVert, "vs", dataHoriz);
+      await displayOCRData(
+        dataVert.confidence > dataHoriz.confidence ? dataVert : dataHoriz,
+      );
+    }
+    if (cMode) {
+      // combine any boxes inside+
+      for (const bbox of bboxes) {
+      }
+    }
 
     // clean up
-    imageContainer.classList.remove("rotate-blue");
+    imageContainer.classList.remove("rotate");
     loading = false;
     drawingBox.remove();
     drawingBox = null;
