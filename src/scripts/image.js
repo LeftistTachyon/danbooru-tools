@@ -630,21 +630,19 @@ previewNode.addEventListener("mouseup", async (e) => {
 });
 
 const upscaler = new Upscaler({
-  model: ESRGANSlim3x,
+  model: ESRGANThick4x,
 });
-// const deblur = new Upscaler({
-//   model: MaximDeblurring,
-// });
 document.getElementById("upscale-btn").addEventListener("click", async () => {
+  // prepare loading labels
   const imageContainer = document.getElementById("image-container"),
     readout = document.getElementById("image-text");
   imageContainer.classList.add("rotate");
   readout.style.display = "block";
   readout.innerHTML = "Upscaling 0.00% complete";
 
-  // wait for loading thing to appear
+  // upscale the image
   const upscaledImage = await upscaler.upscale(previewNode, {
-    patchSize: 64,
+    patchSize: 256,
     padding: 2,
     progress(percent) {
       readout.innerHTML = `Upscaling ${(percent * 100).toFixed(2)}% complete`;
@@ -652,24 +650,7 @@ document.getElementById("upscale-btn").addEventListener("click", async () => {
     progressOutput: "base64",
     awaitNextFrame: true,
   });
-  // console.log(
-  //   previewNode.src.slice(0, 100),
-  //   "to",
-  //   upscaledImage.slice(0, 100),
-  // );
-  // console.log(upscaledImage.length);
   previewNode.src = upscaledImage;
-
-  // const upscaledDeblurredImage = await deblur.execute(previewNode, {
-  //   patchSize: 64,
-  //   padding: 2,
-  //   progress(percent) {
-  //     readout.innerHTML = `Deblurring ${(percent * 100).toFixed(2)}% complete`;
-  //   },
-  //   progressOutput: "base64",
-  //   awaitNextFrame: true,
-  // });
-  // previewNode.src = upscaledDeblurredImage;
 
   // update other necessary pieces of info
   imgHeight *= 3;
@@ -683,6 +664,7 @@ document.getElementById("upscale-btn").addEventListener("click", async () => {
   const resp = await fetch(previewNode.src);
   prevImgFile = await resp.blob();
 
+  // remove loading labels
   imageContainer.classList.remove("rotate");
   readout.style.display = "none";
 });
