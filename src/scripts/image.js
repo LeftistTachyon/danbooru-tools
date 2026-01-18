@@ -86,7 +86,9 @@ function clearBBoxes() {
  * @param {File} file the file to handle
  */
 async function handleNewImageFile(file) {
-  // set cache
+  // set cache & start loading animatic
+  const imageContainer = document.getElementById("image-container");
+  imageContainer.classList.add("rotate");
   prevImgFile = file;
 
   if (document.getElementById("autorun").checked) {
@@ -118,6 +120,9 @@ async function handleNewImageFile(file) {
     clearBBoxes();
     showImage();
   }
+
+  // stop loading animatic
+  imageContainer.classList.remove("rotate");
 }
 
 /**
@@ -168,7 +173,16 @@ function createBBox(idx) {
 
       const translated = await translate(bboxData.original);
       output.value = bboxData.translated = translated.text || "";
-      lastLang = translated.detectedSourceLang;
+      lastLang = bboxData.lang = translated.detectedSourceLang;
+
+      if (lastLang === "ja" || lastLang === "zh") {
+        // remove spaces by default if the language is detected as one that doesn't use spaces
+        const original = bboxData.original;
+        bboxData.original = bboxData.original.replaceAll(" ", "");
+        if (document.getElementById("original").value === original)
+          // replace if still on this
+          document.getElementById("original").value = bboxData.original;
+      }
     }
   });
   // handle RClick
@@ -291,9 +305,17 @@ document.getElementById("link-btn").addEventListener("click", async () => {
 // handle rerun button
 document.getElementById("rerun-btn").addEventListener("click", async () => {
   if (prevImgFile) {
+    // start loading animation
+    const imageContainer = document.getElementById("image-container");
+    imageContainer.classList.add("rotate");
+
+    // do the OCR
     clearBBoxes();
     const data = await recognize(prevImgFile);
     await displayOCRData(data);
+
+    // remove loading animation
+    imageContainer.classList.remove("rotate");
   }
 });
 // handle clear boxes button
@@ -535,7 +557,7 @@ previewNode.addEventListener("mouseup", async (e) => {
           bboxes[i].bbox.y0 >= top &&
           bboxes[i].bbox.y1 <= top + height
         ) {
-          console.log("inside:", bboxes[i]);
+          // console.log("inside:", bboxes[i]);
           toCombine.push(bboxes[i]);
 
           delete bboxes[i];
