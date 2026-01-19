@@ -12,7 +12,7 @@
   "author": "LeafyTachyon",
   "scripts": {
     "start": "nw .",
-    "build": "nwbuild --glob=false --platform=win ./src"
+    "build": "nwbuild --glob=false ./src"
   },
   "keywords": [
     "translation",
