@@ -534,10 +534,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     switch (postList[currIdx].detectedLang) {
       case "ja":
-        (await createJapaneseMenu()).popup(e.x, e.y);
+        (await createJapaneseMenu(e)).popup(e.x, e.y);
         break;
       case "zh":
-        createChineseMenu().popup(e.x, e.y);
+        createChineseMenu(e).popup(e.x, e.y);
         break;
       default:
         createDefaultMenu().popup(e.x, e.y);

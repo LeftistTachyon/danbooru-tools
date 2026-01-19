@@ -14,45 +14,48 @@ export function createDefaultMenu() {
       click: () => {
         console.log("Opening GTranslate...");
         nw.Shell.openExternal(
-          `https://translate.google.com/?sl=auto&tl=en&text=${encodeURI(document.getSelection().toString())}&op=translate`
+          `https://translate.google.com/?sl=auto&tl=en&text=${encodeURI(document.getSelection().toString())}&op=translate`,
         );
       },
       key: "g",
-    })
+    }),
   );
   menu.append(
     new nw.MenuItem({
       label: "Search with Wiktionary...",
       click: () => {
         nw.Shell.openExternal(
-          `https://en.wiktionary.org/wiki/${encodeURI(document.getSelection().toString())}`
+          `https://en.wiktionary.org/wiki/${encodeURI(document.getSelection().toString())}`,
         );
       },
       key: "i",
-    })
+    }),
   );
   menu.append(
     new nw.MenuItem({
       label: "Search on web...",
       click: () => {
         nw.Shell.openExternal(
-          `https://duckduckgo.com/?q=${encodeURI(document.getSelection().toString())}`
+          `https://duckduckgo.com/?q=${encodeURI(document.getSelection().toString())}`,
         );
       },
       key: "w",
-    })
+    }),
   );
 
   return menu;
 }
 
-export function createChineseMenu() {
+export function createChineseMenu(e) {
   const menu = createDefaultMenu();
 
-  const pinyinArray = pinyin(document.getSelection().toString(), {
-    segment: true,
-    group: true,
-  });
+  const pinyinArray = pinyin(
+    document.getSelection().toString() || e.target.value,
+    {
+      segment: true,
+      group: true,
+    },
+  );
   const pinyinText = pinyinArray.map((arr) => arr[0]).join(" ");
 
   menu.insert(
@@ -60,7 +63,7 @@ export function createChineseMenu() {
       label: pinyinText,
       enabled: false,
     }),
-    0
+    0,
   );
   menu.insert(new nw.MenuItem({ type: "separator" }), 1);
   menu.append(
@@ -68,26 +71,26 @@ export function createChineseMenu() {
       label: "Search with ZH Wikipedia...",
       click: () => {
         nw.Shell.openExternal(
-          `https://zh.wikipedia.org/w/index.php?search=${encodeURI(document.getSelection().toString())}`
+          `https://zh.wikipedia.org/w/index.php?search=${encodeURI(document.getSelection().toString())}`,
         );
       },
       key: "k",
-    })
+    }),
   );
 
   return menu;
 }
 
-export async function createJapaneseMenu() {
+export async function createJapaneseMenu(e) {
   const menu = createDefaultMenu();
 
   await kuroshiroReady;
   const romajiText = await kuroshiro.convert(
-    document.getSelection().toString(),
+    document.getSelection().toString() || e.target.value,
     {
       to: "romaji",
       mode: "spaced",
-    }
+    },
   );
 
   menu.insert(
@@ -95,7 +98,7 @@ export async function createJapaneseMenu() {
       label: romajiText,
       enabled: false,
     }),
-    0
+    0,
   );
   menu.insert(new nw.MenuItem({ type: "separator" }), 1);
   menu.append(
@@ -103,22 +106,22 @@ export async function createJapaneseMenu() {
       label: "Open in Jisho...",
       click: () => {
         nw.Shell.openExternal(
-          `https://jisho.org/search/${encodeURI(document.getSelection().toString())}`
+          `https://jisho.org/search/${encodeURI(document.getSelection().toString())}`,
         );
       },
       key: "j",
-    })
+    }),
   );
   menu.append(
     new nw.MenuItem({
       label: "Search with JP Wikipedia...",
       click: () => {
         nw.Shell.openExternal(
-          `https://ja.wikipedia.org/w/index.php?search=${encodeURI(document.getSelection().toString())}`
+          `https://ja.wikipedia.org/w/index.php?search=${encodeURI(document.getSelection().toString())}`,
         );
       },
       key: "k",
-    })
+    }),
   );
 
   return menu;
