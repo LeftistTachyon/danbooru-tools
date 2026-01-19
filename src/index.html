@@ -5,6 +5,11 @@
     <title>Danbooru Tools - Homepage</title>
 
     <script>
+      document.documentElement.setAttribute(
+        "data-theme",
+        localStorage.getItem("general.theme") || "light",
+      );
+
       document.addEventListener("DOMContentLoaded", () => {
         const username = localStorage.getItem("api.danbooru.username");
         if (username) {
