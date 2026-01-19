@@ -1,3 +1,32 @@
+:root {
+  --drag-selected: #ccc;
+  --drag-border: black;
+  --default-bbox: #0004;
+  --bbox-border: white;
+  --blue-bbox: #19197044;
+  --green-bbox: #00800044;
+
+  --white-accent: #aaa;
+  --blue: skyblue;
+  --blue-accent: cornflowerblue;
+  --text-blue: blue;
+  --green: lightgreen;
+  --green-accent: mediumseagreen;
+  --text-green: green;
+}
+[data-theme="dark"] {
+  --drag-selected: #222;
+  --drag-border: white;
+
+  --white-accent: #888;
+  --blue: darkblue;
+  --blue-accent: blue;
+  --text-blue: skyblue;
+  --green: darkgreen;
+  --green-accent: green;
+  --text-green: lightgreen;
+}
+
 body {
   display: flex;
   flex-direction: column;
@@ -23,9 +52,9 @@ body {
   padding: 6px;
 }
 #image-container.dragover {
-  background: #ccc;
+  background: var(--drag-selected);
   margin: -4px;
-  border: 4px dotted black;
+  border: 4px dotted var(--drag-border);
 }
 #textbox-container {
   position: sticky;
@@ -50,17 +79,17 @@ body {
 }
 
 .bbox {
-  background: #0004;
-  border: 1px solid white;
+  background: var(--default-bbox);
+  border: 1px solid var(--bbox-border);
   position: absolute;
   cursor: pointer;
 }
 #blue-bbox {
-  background: #19197044;
+  background: var(--blue-bbox);
   z-index: 1;
 }
 #green-bbox {
-  background: #00800044;
+  background: var(--green-bbox);
   z-index: 1;
 }
 #with-image.hide-bbox > .bbox:not(#blue-bbox) {
@@ -109,21 +138,25 @@ body {
 
 .rotate {
   animation: rotate-gradient 1s linear infinite;
-  background: linear-gradient(var(--rotate), white, #aaa);
+  background: linear-gradient(
+    var(--rotate),
+    var(--background-color),
+    var(--white-accent)
+  );
 }
 .blue-border {
-  background: skyblue;
+  background: var(--blue);
 }
 .blue-border.rotate {
   animation: rotate-gradient 1s linear infinite;
-  background: linear-gradient(var(--rotate), skyblue, cornflowerblue);
+  background: linear-gradient(var(--rotate), var(--blue), var(--blue-accent));
 }
 .green-border {
-  background: lightgreen;
+  background: var(--green);
 }
 .green-border.rotate {
   animation: rotate-gradient 1s linear infinite;
-  background: linear-gradient(var(--rotate), lightgreen, mediumseagreen);
+  background: linear-gradient(var(--rotate), var(--green), var(--green-accent));
 }
 .blue-border img,
 .green-border img {

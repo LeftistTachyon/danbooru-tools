@@ -19,10 +19,17 @@
           .addEventListener("click", (e) => {
             e.preventDefault();
             nw.Shell.openExternal(
-              `${localStorage.getItem("general.site") || "https://danbooru.donmai.us"}/profile`
+              `${localStorage.getItem("general.site") || "https://danbooru.donmai.us"}/profile`,
             );
             return false;
           });
+
+        document.getElementById("theme").addEventListener("change", (e) => {
+          document.documentElement.setAttribute(
+            "data-theme",
+            e.target.value || "light",
+          );
+        });
       });
     </script>
   </head>
@@ -50,7 +57,7 @@
       <legend>General Settings</legend>
       <div class="input-group">
         <label for="theme">Theme:</label>
-        <select id="theme" name="general.theme" class="setting" disabled>
+        <select id="theme" name="general.theme" class="setting">
           <option value="light">Light</option>
           <option value="dark">Dark</option>
         </select>

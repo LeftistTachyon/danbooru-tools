@@ -67,10 +67,12 @@
 
       <i>
         Press
-        <span style="color: blue">
+        <span style="color: var(--text-blue)">
           "N" to draw boxes around areas of interest
         </span>
-        or <span style="color: green">"C" to combine nearby boxes</span>.
+        or
+        <span style="color: var(--text-green)">"C" to combine nearby boxes</span
+        >.
       </i>
     </div>
 
@@ -103,7 +105,9 @@
         <textarea id="original"></textarea>
         <h4>DeepL'd</h4>
         <textarea id="deepl" readonly></textarea>
-        <button id="retranslate-btn">Retranslate</button>
+        <button id="retranslate-btn" style="margin-top: 6px">
+          Retranslate
+        </button>
       </div>
     </div>
   </body>

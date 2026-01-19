@@ -1,5 +1,10 @@
-/* Load settings from localStorage */
+// load light/dark mode
+document.documentElement.setAttribute(
+  "data-theme",
+  localStorage.getItem("general.theme") || "light",
+);
 
+/* Load settings from localStorage */
 document.addEventListener("DOMContentLoaded", () => {
   // Load settings from localStorage
   for (const element of document.getElementsByClassName("setting")) {
