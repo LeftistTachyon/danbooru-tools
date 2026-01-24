@@ -71,7 +71,7 @@ export function createChineseMenu(e) {
       label: "Search with ZH Wikipedia...",
       click: () => {
         nw.Shell.openExternal(
-          `https://zh.wikipedia.org/w/index.php?search=${encodeURI(document.getSelection().toString())}`,
+          `https://zh.wikipedia.org/w/index.php?search=${encodeURI(document.getSelection().toString() || e.target.value)}`,
         );
       },
       key: "k",
@@ -106,7 +106,7 @@ export async function createJapaneseMenu(e) {
       label: "Open in Jisho...",
       click: () => {
         nw.Shell.openExternal(
-          `https://jisho.org/search/${encodeURI(document.getSelection().toString())}`,
+          `https://jisho.org/search/${encodeURI(document.getSelection().toString() || e.target.value)}`,
         );
       },
       key: "j",
@@ -117,7 +117,7 @@ export async function createJapaneseMenu(e) {
       label: "Search with JP Wikipedia...",
       click: () => {
         nw.Shell.openExternal(
-          `https://ja.wikipedia.org/w/index.php?search=${encodeURI(document.getSelection().toString())}`,
+          `https://ja.wikipedia.org/w/index.php?search=${encodeURI(document.getSelection().toString() || e.target.value)}`,
         );
       },
       key: "k",
