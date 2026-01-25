@@ -233,11 +233,11 @@ async function displayOCRData(data) {
 
 // handle normal pastes
 document.addEventListener("paste", (e) => {
-  e.preventDefault();
-
   for (const clipboardItem of e.clipboardData.files) {
     // if image
     if (clipboardItem.type.startsWith("image/")) {
+      e.preventDefault();
+
       // process no more files
       handleNewImageFile(clipboardItem);
       break;
