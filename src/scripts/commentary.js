@@ -540,7 +540,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         createChineseMenu(e).popup(e.x, e.y);
         break;
       default:
-        createDefaultMenu().popup(e.x, e.y);
+        createDefaultMenu(e).popup(e.x, e.y);
         break;
     }
 

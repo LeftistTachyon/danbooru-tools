@@ -5,7 +5,14 @@ const KuromojiAnalyzer = require("kuroshiro-analyzer-kuromoji");
 const kuroshiro = new Kuroshiro.default();
 const kuroshiroReady = kuroshiro.init(new KuromojiAnalyzer());
 
-export function createDefaultMenu() {
+function getSelection(e) {
+  return document.getSelection().toString() || e.target.value;
+}
+function getSelectionURL(e) {
+  return encodeURI(getSelection(e).replaceAll("?", "%3F"));
+}
+
+export function createDefaultMenu(e) {
   const menu = new nw.Menu();
 
   menu.append(
@@ -14,7 +21,7 @@ export function createDefaultMenu() {
       click: () => {
         console.log("Opening GTranslate...");
         nw.Shell.openExternal(
-          `https://translate.google.com/?sl=auto&tl=en&text=${encodeURI(document.getSelection().toString())}&op=translate`,
+          `https://translate.google.com/?sl=auto&tl=en&text=${getSelectionURL(e)}&op=translate`,
         );
       },
       key: "g",
@@ -25,7 +32,7 @@ export function createDefaultMenu() {
       label: "Search with Wiktionary...",
       click: () => {
         nw.Shell.openExternal(
-          `https://en.wiktionary.org/wiki/${encodeURI(document.getSelection().toString())}`,
+          `https://en.wiktionary.org/wiki/${getSelectionURL(e)}`,
         );
       },
       key: "i",
@@ -36,7 +43,7 @@ export function createDefaultMenu() {
       label: "Search on web...",
       click: () => {
         nw.Shell.openExternal(
-          `https://duckduckgo.com/?q=${encodeURI(document.getSelection().toString())}`,
+          `https://duckduckgo.com/?q=${getSelectionURL(e)}`,
         );
       },
       key: "w",
@@ -47,15 +54,12 @@ export function createDefaultMenu() {
 }
 
 export function createChineseMenu(e) {
-  const menu = createDefaultMenu();
+  const menu = createDefaultMenu(e);
 
-  const pinyinArray = pinyin(
-    document.getSelection().toString() || e.target.value,
-    {
-      segment: true,
-      group: true,
-    },
-  );
+  const pinyinArray = pinyin(getSelection(e), {
+    segment: true,
+    group: true,
+  });
   const pinyinText = pinyinArray.map((arr) => arr[0]).join(" ");
 
   menu.insert(
@@ -71,7 +75,7 @@ export function createChineseMenu(e) {
       label: "Search with ZH Wikipedia...",
       click: () => {
         nw.Shell.openExternal(
-          `https://zh.wikipedia.org/w/index.php?search=${encodeURI(document.getSelection().toString() || e.target.value)}`,
+          `https://zh.wikipedia.org/w/index.php?search=${getSelectionURL(e)}`,
         );
       },
       key: "k",
@@ -82,16 +86,13 @@ export function createChineseMenu(e) {
 }
 
 export async function createJapaneseMenu(e) {
-  const menu = createDefaultMenu();
+  const menu = createDefaultMenu(e);
 
   await kuroshiroReady;
-  const romajiText = await kuroshiro.convert(
-    document.getSelection().toString() || e.target.value,
-    {
-      to: "romaji",
-      mode: "spaced",
-    },
-  );
+  const romajiText = await kuroshiro.convert(getSelection(e), {
+    to: "romaji",
+    mode: "spaced",
+  });
 
   menu.insert(
     new nw.MenuItem({
@@ -105,9 +106,7 @@ export async function createJapaneseMenu(e) {
     new nw.MenuItem({
       label: "Open in Jisho...",
       click: () => {
-        nw.Shell.openExternal(
-          `https://jisho.org/search/${encodeURI(document.getSelection().toString() || e.target.value)}`,
-        );
+        nw.Shell.openExternal(`https://jisho.org/search/${getSelectionURL(e)}`);
       },
       key: "j",
     }),
@@ -117,7 +116,7 @@ export async function createJapaneseMenu(e) {
       label: "Search with JP Wikipedia...",
       click: () => {
         nw.Shell.openExternal(
-          `https://ja.wikipedia.org/w/index.php?search=${encodeURI(document.getSelection().toString() || e.target.value)}`,
+          `https://ja.wikipedia.org/w/index.php?search=${getSelectionURL(e)}`,
         );
       },
       key: "k",
